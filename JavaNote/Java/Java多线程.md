@@ -1,0 +1,799 @@
+---
+title: Java 多线程
+date: 2019/03/17 11:30
+categories:
+- Java
+tags:
+- Java
+---
+
+## 重要概念
+
+### 异步和同步
+
+同步和异步通常用来形容一次方法的调用, 同步方法调用一旦开始, 调用者必须在调用返回后才能继续后续的行为. 异步方法调用更像一个消息传递, 一旦开始, 方法调用就会立即返回, 调用者可以继续后续的工作. 
+
+### 并发和并行
+
+它们都可以表示两个或以上任务一起执行, 但并发偏重多个任务交替执行, 而并行是真正意义上的"同时执行".
+
+多线程在单核 CPU 中是交替执行(并发), 在多核 CPU 中, 因为每个 CPU 有自己的运算器, 所以在多个 CPU 中可以同时运行(并行).
+
+### 高并发
+
+高并发互联网分布式系统架构设计中必须考虑的因素之一, 通常指设计保证系统能够同时并行处理大量请求.
+
+高并发常用的一些指标有: 响应时间(Response Time), 吞吐量(Throughput), 每秒查询率(QPS), 并发用户数等.
+
+### 临界区
+
+临界区用来表示一种公共资源或者说是共享数据, 可以被多个线程使用. 但是每一次, 只能有一个线程使用它, 一旦临界区资源被占用, 其他线程想要使用这个资源, 就必须等待. 在并行程序中, 临界区资源是保护的对象.
+
+### 阻塞和非阻塞
+
+非阻塞指在不能立刻得到结果之前, 该函数不会阻塞当前进程, 而会立刻返回, 而阻塞与之相反.
+
+## 多线程使用的常见三种方式
+
+- 继承 Thread 类, 重写父类 `run()` 方法
+
+    ```java
+    public class thread1 extends Thread {
+            public void run() {
+                    for (int i = 0; i < 10000; i++) {
+                            System.out.println("我是线程"+this.getId());
+                    }
+            }
+            public static void main(String[] args) {
+                    thread1 th1 = new thread1();
+                    thread1 th2 = new thread1();
+                    th1.start();
+                    th2.start();
+            }
+    }
+    
+    ```
+
+- 实现 Runnable 接口
+
+    ```java
+    public class thread2 implements Runnable {
+            public String ThreadName;
+            public thread2(String tName){
+                    ThreadName = tName;
+            }
+            public void run() {
+                    for (int i = 0; i < 10000; i++) {
+                            System.out.println(ThreadName);
+                    }
+            }
+            public static void main(String[] args) {
+                    // 创建一个Runnable接口实现类的对象
+                    thread2 th1 = new thread2("线程A:");
+                    thread2 th2 = new thread2("线程B:");
+                    // 将此对象作为形参传递给Thread类的构造器中，创建Thread类的对象，此对象即为一个线程
+                    Thread myth1 = new Thread(th1);
+                    Thread myth2 = new Thread(th2);
+                    // 调用start()方法，启动线程并执行run()方法
+                    myth1.start();
+                    myth2.start();
+            }
+    }
+    
+    ```
+
+- 通过 Callable 和 Future 创建线程
+
+    ```java
+    import java.util.concurrent.Callable;
+    import java.util.concurrent.ExecutionException;
+    import java.util.concurrent.FutureTask;
+     
+    public class CallableThreadTest implements Callable<Integer>
+    {
+    	@Override
+    	public Integer call() throws Exception{
+    		int i = 0;
+    		for(;i<100;i++){
+    			System.out.println(Thread.currentThread().getName()+" "+i);
+    		}
+    		return i;
+    	}
+    	
+    	public static void main(String[] args){
+    		CallableThreadTest ctt = new CallableThreadTest();
+    		FutureTask<Integer> ft = new FutureTask<>(ctt);
+    		for(int i = 0;i < 100;i++){
+    			System.out.println(Thread.currentThread().getName()+" 的循环变量i的值"+i);
+    			if(i==20){
+    				new Thread(ft,"有返回值的线程").start();
+    			}
+    		}
+    		try{
+    			System.out.println("子线程的返回值："+ft.get());
+    		} catch (InterruptedException e){
+    			e.printStackTrace();
+    		} catch (ExecutionException e){
+    			e.printStackTrace();
+    		}
+    	}
+    }
+    ```
+
+**Runnable 和 Callable 的对比**
+
+1. Callable 规定重写 `call()`, Runnable 规定重写 `run()`.
+2. Callable 的任务执行后可返回值, Runnable 的任务没有返回值.
+3. `call()` 方法可以抛出异常, `run()` 方法不可以
+4. 运行 Callable 任务可以得到一个 Future 对象, 表示异步计算的结果, 提供了检查计算是否完成的方法, 以等待计算的完成, 并检查计算的结果. 通过 Future 对象还可以了解任务的执行情况, 可以取消任务的执行, 还可以获取执行结果.
+
+## 线程生命周期
+
+![0062LbXpgy1g15xzlyojyj30oc0domy4.jpg](https://i.loli.net/2019/03/29/5c9e232a6ebb4.jpg)
+
+
+
+![线程生命周期](https://i.loli.net/2019/03/29/5c9e237a7b850.jpg)
+
+### 线程状态
+
+- **新建状态**: 新建线程对象, 没有调用 `start()` 之前.
+- **就绪状态**: 调用 `start()` 方法之后线程就进入就绪状态, 但是并不是说只要调用 `start()` 方法, 线程就马上变为当前线程, 在变为当前线程之前都是为就绪状态.
+- **运行状态**: 线程被设置为当前线程, 获得 CPU 后, 开始执行 `run()` 方法, 即线程进入运行状态.
+- **阻塞状态**: 处于运行状态的线程, 会因为系统对资源的调度而被中断进入阻塞状态.
+- **死亡状态**: 处于运行状态的线程, 当它主动或者被动结束后, 线程就处于死亡状态.
+
+### 线程控制
+
+- `join()`: 等待. 阻塞调用此方法时**所在的线程**并释放锁, 让调**用该方法的线程**完成才继续执行. 
+
+- `sleep()`: 睡眠. 让当前的正在执行的线程暂停指定的时间, 并进入阻塞状态.
+
+- `yield()`: 线程让步. 将线程从运行状态转换为就绪状态. 当某个线程调用 `yield()` 方法从运行状态转换到就绪状态后, CPU 会从就绪状态线程队列中只选择与该线程优先级相同, 或优先级更高的线程执行.
+
+- `setPriority()`: 改变线程的优先级. 
+
+  参数 `priorityLevel` 范围在 1-10 之间. 常用的静态常量值有: `MAX_PRIORITY = 10, MIN_PRIORITY = 1, NORM_PRIORITY = 5`.
+
+  具有较高优先级仅表示此线程具有更多的执行机会, 而并非会优先执行. 优先级还有继承性.
+
+- `setDaemon(true)`: 设置为守护线程. 守护进程主要为其他线程提供服务. JVM 中的垃圾回收线程, 但所有的前台线程都进入死亡状态时, 守护线程会自动死亡.
+
+  1. 必须在 `start()` 之前执行, 否则会抛出 `IllegalThreadStateEcxeption`.
+  2. 在守护线程中产生的新线程也是守护线程.
+  3. 不是所有的任务都可以分配给守护线程来执行, 如: 读写操作或计算逻辑.
+
+## 实例变量和线程安全
+
+> 线程类中实例变量针对其他线程可以有共享和不共享之分
+
+```java
+		MyThread a = new MyThread("A");
+		MyThread b = new MyThread("B");
+		MyThread c = new MyThread("C");
+		a.start();
+		b.start();
+		c.start();
+```
+
+以上这种情况, 线程的变量不会共享
+
+```java
+		SharedVariableThread mythread = new SharedVariableThread();
+		// 下列线程都是通过mythread对象创建的
+		Thread a = new Thread(mythread, "A");
+		Thread b = new Thread(mythread, "B");
+		Thread c = new Thread(mythread, "C");
+		a.start();
+		b.start();
+		c.start();
+```
+
+而这种情况下, a, b, c 线程共享 mythread 线程的变量
+
+## 多线程分类
+
+- **用户进程**: 运行在前台, 执行具体的任务. 如: 程序的主线程, 连接网络的子线程.
+
+- **守护线程**: 运行在后台, 为其他前台线程服务. 如: 垃圾回收线程
+
+  **特点**: 一旦所有用户线程都结束运行, 守护形成会随 JVM 一起结束工作.
+
+  **应用**: 数据库连接池中的检测线程, JVM 虚拟机启动后的检测线程
+
+## synchronized 关键字
+
+> Java 并发编程领域中, synchronized 关键字一直都是元老级别的角色. 在 JDK1.6 之前, synchronized 的性能比 ReenTrantLock 差很多. 而在 JDK1.6 之后, JVM 团队对 synchronized 关键字做了很多优化, 主要包括为了减少获得锁和释放锁带来的性能消耗而引入的偏向锁和轻量级锁. synchronized 和 ReenTrantLock 的性能基本是持平了.
+
+synchronized 可以保证方法或者代码块在运行时, 同一时刻只有一个方法可以进入到临界区, 同时它还可以保证共享变量的内存可见性. synchronized 主要有一下三个作用: 保证互斥性, 保证可见性, 保证顺序性.
+
+### 线程安全
+
+**非线程安全** 问题存在于 **实例变量中**, 如果是方法内部私有成员变量, 则不存在 **非线程安全** 问题.
+
+如果连个线程同时操作对象中的实例变量, 则会出现 **非线程安全**, 解决办法就是在方法前加上 synchronized 关键字即可.
+
+### 使用场景
+
+![synchronized使用场景](https://i.loli.net/2019/03/29/5c9e23af2cdc8.jpg)
+
+**注意**: **类锁** 和 **对象锁** 之间不互斥. 即, 一个线程可以同时获得 类锁 和 对象锁.
+
+### synchronized 锁重入
+
+**可重入锁** 含义是: 自己可以再次获取自己内部的锁. 比如一个线程获得了某个对象的锁, 此时这个对象还没有释放, 当其再次想要获取这个对象的锁时, 还是可以获取的, 如果不可重入的话, 就会造成死锁.
+
+可重入锁也支持在父子类继承的环境当中.
+
+## 对象头
+
+[synchronized](#synchronized) 用的锁是存在 Java 对象头中的. 如果对象是数组类型, 则虚拟机用 3 个字宽(Word)存储对象头, 如果对象是非数组类型, 则用 2 个字宽存储对象头.
+
+|   长度   |          内容          |              说明              |
+| :------: | :--------------------: | :----------------------------: |
+| 32/64bit |       Mark Word        | 存储对象的 hashcode 或 锁信息  |
+| 32/64bit | Class Metadata Address |    存储到对象类型数据的指针    |
+| 32/32bit |      Array length      | 数组的长度(如果当前对象是数组) |
+
+**32位虚拟机对象头的存储结构**
+
+![0062LbXpgy1g1ncd4pnwuj30sg095afx.jpg](https://i.loli.net/2019/04/03/5ca40b770eeca.jpg)
+
+**64位虚拟机对象头的存储结构**
+
+![UTOOLS1554117408933.png](https://i.loli.net/2019/04/01/5ca1f32088062.png)
+
+## 对象监视器(monitor)
+
+![0062LbXpgy1g15vb674msj30jg079dfr.jpg](https://i.loli.net/2019/03/29/5c9e23df33d2b.jpg)
+
+每个对象都有自己的监视器, 当这个对象由同步块或者这个对象的同步方法调用时, 执行方法的线程必须先获取该对象的监视器才能进入同步块和同步方法. 没有获取到监视器的进程将被阻塞在同步块和同步方法的入口处, 进入 BLOCKED 状态. 
+
+任意线程对 Object 的访问, 首先要获得 Object 的监视器, 如果获取失败, 该线程就要进入同步队列, 线程变为 BLOCKED, 当 Object 的监视器占有者释放后, 在同步队列中的线程就有机会重新获取该监视器.
+
+Monitor 是线程私有的数据结构, 每个线程有一个可用的 monitor record 列表, 同时还有一个全局的可用列表. 每一个被锁住的对象都会和一个 monitor 关联(对象头的 Mark Word 中的 Lock Word 指向 Monitor 的起始地址), 同时 Monitor 中有一个 owner 字段存放拥有该锁的线程的唯一标识, 标识该锁被这个线程占用, 结构如下:
+
+![0062LbXpgy1g1669naxf3j306y0h9dfo.jpg](https://i.loli.net/2019/04/01/5ca1edfd1783c.jpg)
+
+- Owner: 初始时为 Null, 表示当前没有任何现场拥有该 Monitor Record, 当线程成功拥有该锁后, 保存线程唯一表示, 当锁被释放时, 又设置为 Null.
+- EntryQ: 关联一个系统互斥锁, 阻塞所有视图锁住 Monitor Record 失败的线程.
+- RcThis: 表示 BLOCKED 或 waiting 在该 Monitor Record 上的所有线程的个数.
+- Nest: 用来实现重入锁的计数.
+- HashCode: 保存从对象头拷贝过来的 HashCode 值
+- Cadidate: 用来避免不必要的阻塞或等待线程唤醒, 因为每一次只有一个线程能够成功拥有锁, 如果每次前一个释放锁的线程唤醒所有阻塞或等待的线程, 会引起不必要的[上下文切换](#上下文切换)(从阻塞到就绪然后因为竞争锁失败又被阻塞)从而导致的性能下降. Candidate 只有两种可能的值: 0 表示没有需要唤醒的线程, 1 表示要唤醒的一个继任线程来竞争锁.
+
+## volatile 关键字
+
+在 JDK1.2 之前, Java 的内存模型实现总是从主存(共享内存)中读取变量, 是不需要进行特别注意的. 而现在的 Java 内存模型下, 线程可以把变量保存到 本地内存(机器的寄存器)中, 而不是直接在主存中进行读写. 这可能导致一个线程在主存中修改了一个变量的值, 而另外一个线程继续使用它在寄存器中的变量值的拷贝, 造成数据不一致.
+
+![JDK1.2 内存模型](https://i.loli.net/2019/03/29/5c9e2416d122c.jpg)
+
+> JVM 在空闲时会尽力保证变量值的更新, 把主存中的数据读取到工作内存中. 所以没有加同步关键字的变量被修改后, 在工作内存中的值是不确定的.
+
+相对于 synchronized 块的代码锁, volatile 提供了一个轻量级的针对共享变量的锁.当在多个线程间使用共享变量进行通信的时候, 需要考虑将共享变量用 volatile 修饰, 告知 JVM 这个变量是不稳定的, 每次都要到主存中进行读取, 避免数据不一致的问题出现.
+
+![当今内存模型](https://i.loli.net/2019/03/29/5c9e243340784.jpg)
+
+### 可见性
+
+volatile 修饰的成员变量在每次被线程访问时, 都强迫从主存中重读改成员变量的值, 而且当**成员变量发生变化时, 强迫线程将变化值回写到主存**. 这样在任何时刻, 不同线程看到的成员变量都是同一个值, 保证了同步数据的可见性.
+
+#### 禁止重排序
+
+volatile 通过内存屏障来禁止指令重排序. 
+
+volatile 重排序规则表:
+
+![UTOOLS1556426956247.png](https://i.loli.net/2019/04/28/5cc530cf1a2df.png)
+
+1. 当第二个操作是 volatile写 时, 不管第一个操作是什么, 都不能重排序. 这个规则确保 volatile写 之前的操作不会被编译器重排序到 volatile写 之后. 
+2. 当第一个操作是 volatile读 时, 不管第二个操作是什么, 都不能重排序. 这个规则确保 volatile读 之后的操作不会被编译器重排序到 volatile读 之前.
+3. 当第一个操作是 volatile写, 第二个操作是 volatile读 时, 不能重排序.
+
+### 原子性?
+
+volatile **无法同时保证内存可见性和原子性**, 加锁机制(同步机制)既可以确保可见性, 又可以确保原子性. volatile 只能确保可见性. 原因是: 声明为 volatile 的简单变量如果当前值与该变量以前的值相关, 那么 volatile 关键字不起作用, 比如: `count++`, `count = count + 1`, 都不是原子操作.
+
+**适合使用 volatile 的情况**:
+
+1. 对变量的写入操作不依赖变量的当前值, 或者能确保只有单个线程更新变量的值.
+
+2. 该变量没有包含在具有其他变量的不变式中.
+
+   如:
+
+   ```java
+   public volatile boolean flag;
+   while(!flag){
+    // do something...
+   }
+   public setFlag(){
+    flag = false;
+   }
+   ```
+
+   不适用示例:
+
+   ```java
+   public volatile int count;
+   // ...
+   run() {
+    count++; // 不能保证原子性
+   }
+   ```
+
+3. 只是需要解决变量在多个线程之间的可见性. 资源的同步性应交由 synchronized 关键字.
+
+## 等待/通知(wait/notify)机制
+
+等待通知机制: 指一个线程 A 调用了对象 O 的 `wait()` 方法进入该对象的等待池中, 而另一个线程 B 调用了对象 O 的 `notify()/notifyAll()` 方法, 线程 A 收到通知后退出等待池而进入该对象的锁池中, 等待锁竞争.
+
+### 相关方法
+
+|     方法名     |                             描述                             |
+| :------------: | :----------------------------------------------------------: |
+|    notify()    | **随机**唤醒等待池中的 **一个线程**, 并让该线程进入该对象的锁池, 等待锁竞争. |
+|  notifyAll()   |              使该对象等待池中所有线程进入锁池.               |
+|     wait()     | 使调用该方法的对象所在的线程释放共享资源锁, 然后进入等待池.  |
+|   wait(long)   |   超时等待一段时间, 单位是毫秒. 等待时间结束后, 自动唤醒.    |
+| wait(long,int) |              更精确的等待时间控制, 精确到纳秒.               |
+
+> **注意**: 
+>
+> 1. `notify()` 不会释放锁, 在方法执行完 synchronize 代码块后才会释放. `wait()` 会立即释放锁.
+> 2. 只能在 **同步方法或同步块** 中调用 `wait()/notify()/notifyAll()` 方法. 方法调用之前必须先获得该对象的对象级别锁, 如果调用时没有持有适当的锁, 则抛出 `IllegalMonitorStateException` 异常
+> 3. 当线程处于 wait 状态时, 对线程对象调用 interrupt 方法会出现 InterruptedException 异常.
+
+### sleep() 和 wait() 区别
+
+`sleep()` 方法是线程类(Thread)的静态方法, 让此线程暂停执行指定时间, 将执行机会让给其他线程, 但是监控状态依然保持, 到时后会自动恢复到就绪状态. 调用 sleep 不会释放对象锁.
+
+`wait()` 方法是 Object 类的方法, 对此对象调用 wait() 方法导致本线程放弃对象锁, 进入该对象的等待池, 只有针对此对象发出的 notify/notifAll 方法后, 线程才会进入对象锁池准备获得对象锁进入就绪状态.
+
+## ThreadLocal
+
+JDK 中提供 ThreadLocal 类来解决多个线程使用同一个 public static 变量的问题. ThreadLocal 让每个线程绑定自己的值. 也就是说它让每个线程可以存储自己的数据, 存放在堆中.
+
+> 堆内存中的对象可以被所有线程访问, 但是 ThreadLocal 通过一些技巧将可见性修改成了线程可见.
+
+|     方法名     |                             描述                             |
+| :------------: | :----------------------------------------------------------: |
+|     get()      |            返回此线程局部变量的当前线程副本中的值            |
+| initialValue() | 返回此线程局部变量的当前线程的初始值, 便于子类重写. 不重写为 Null. |
+|    remove()    |               删除此线程局部变量的当前线程的值               |
+|  set(T value)  |       将此线程局部变量的当前线程副本的值设置为指定的值       |
+
+```java
+public class Test3 {
+
+    public static void main(String[] args) {
+        try {
+            for (int i = 0; i < 10; i++) {
+                System.out.println("       在Main线程中取值=" + Tools.tl.get());
+                Thread.sleep(100);
+            }
+            Thread.sleep(5000);
+            ThreadA a = new ThreadA();
+            a.start();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    static public class Tools {
+        public static ThreadLocalExt tl = new ThreadLocalExt();
+    }
+    static public class ThreadLocalExt extends ThreadLocal {
+        @Override
+        protected Object initialValue() {
+            return new Date().getTime();
+        }
+    }
+
+    static public class ThreadA extends Thread {
+
+        @Override
+        public void run() {
+            try {
+                for (int i = 0; i < 10; i++) {
+                    System.out.println("在ThreadA线程中取值=" + Tools.tl.get());
+                    Thread.sleep(100);
+                }
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+    }
+}
+```
+
+结果如图
+
+![0062LbXpgy1g15zk4vuxxj30ai0d3qa1.jpg](https://i.loli.net/2019/03/29/5c9e24605e258.jpg)
+
+可以看出: 不同线程从 ThreadLocal 中获取的值不相同.
+
+### InheritableThreadLocal
+
+ThreadLocal 类固然好, 但是子线程无法取到父线程 ThreadLocal 类的变量, 从而有了 InheritableThreadLocal 来解决这个问题.
+
+修改上面代码中的 Tools 类和 ThreadLocalExt 类:
+
+```java
+ static public class Tools {
+        public static InheritableThreadLocalExt tl = new InheritableThreadLocalExt();
+    }
+    static public class InheritableThreadLocalExt extends InheritableThreadLocal {
+        @Override
+        protected Object initialValue() {
+            return new Date().getTime();
+        }
+    }
+```
+
+![0062LbXpgy1g15zoa6b3tj30b70d8gn3.jpg](https://i.loli.net/2019/03/29/5c9e2474bf965.jpg)
+
+结果如上图所示.
+
+同时还可以重写 `childValue(Object parentValue)` 来获取父类的变量值, 定制子类的变量值.
+
+只是需要注意: 如果子线程在取得值的同时, 主线程将 InheritableThreadLocal 中的值进行更改, 那么子线程取到的还是旧值.
+
+## Lock 接口
+
+### Lock 接口简介
+
+锁是用于多个线程控制对共享资源的访问的工具, 通常, 锁提供对共享资源的独占访问: 一次只能有一个线程可以获取锁, 并且对共享资源的所有访问要求首先获取锁. 但是一些锁可能允许并发访问共享资源, 如 ReadWriteLock 的读写锁.
+
+JDK1.5 之后, 并发包中新增了 Lock 接口以及相关实现类来实现锁功能.
+
+**Lock 接口的实现类**: ReentrantLock, ReentrantReadWriteLock.ReadLock, ReentrantReadWriteLock.WriteLock
+
+### 简单使用
+
+```java
+Lock lock=new ReentrantLock()；
+lock.lock();
+try{
+    // do something
+    // 如果有return要写在try块中
+}finally{
+    // 保证锁最终能被释放
+    lock.unlock();
+}
+```
+
+### 特性和方法
+
+|          |                         synchronized                         |                             Lock                             |
+| :------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
+| 存在层次 |                         Java 关键字                          |                             接口                             |
+| 锁的释放 | 获取到锁的线程执行完同步代码, 释放锁<br>线程执行发生异常, JVM 使线程释放锁 |        在 finally 中必须释放锁, 不然容易造成线程死锁         |
+| 锁的获取 |  假设A线程获得锁, B线程等待. 如果A线程阻塞, B线程会一直等待  | 尝试非阻塞地获取锁[^1]<br>能被中断地获取锁[^2]<br>超时获取锁[^3] |
+|  锁状态  |                           无法判断                           |                   可以判断有没有成功获取锁                   |
+|  锁类型  |                    可重入 不可中断 非公平                    |                  可重入 可中断 公平/非公平                   |
+
+[^1]:当前线程尝试获取锁, 如果这一时刻没有被其他线程获取到, 则成功获取并持有锁.
+[^2]:获取到锁的线程能够响应中断, 当获取到锁的线程被中断时, 中断异常将会被抛出, 同时锁会被释放.
+[^3]:在指定的截止时间之前获取锁, 超过截止时间仍旧无法获取则返回.
+
+**基本方法**
+
+|                  方法名                   |                             描述                             |
+| :---------------------------------------: | :----------------------------------------------------------: |
+|                void lock()                | 获得锁. 如果锁不可用, 则当前线程将被禁用以进行线程调度, 并处于休眠状态, 直到获取锁. |
+|         void lockInterruptibly()          | 获取锁. 如果可用并立即返回. 如果锁不可用, 那么当前线程将被禁用以进行线程调度, 并且处于休眠状态. 在锁的获取中可以中断当前线程. |
+|         Condition newCondition()          | 获取等待通知组件, 该组件和当前的锁绑定, 当前线程只有获得了锁, 才能调用该组件的 `wait()` 方法. 而调用后, 当前线程将释放锁. |
+|             boolean tryLock()             | 只有在调用时才可以获得锁, 如果可用, 则获取锁, 并返回值 true. 如果不可用, 返回值 false. |
+| boolean tryLock(long time, TimeUnit unit) | 超时获取锁, 当前线程在以下三种情况下会返回:<br>1. 当前线程在超时时间内获得了锁.<br>2. 当前线程在超时时间内被中断.<br>3. 超时时间结束, 返回 false. |
+|               void unlock()               |                           释放锁.                            |
+
+### ReentrantLock
+
+**构造方法**:
+
+|          方法名称           |                             描述                             |
+| :-------------------------: | :----------------------------------------------------------: |
+|       ReentrantLock()       |                创建一个 ReentrantLock 的实例.                |
+| ReentrantLock(boolean fair) | 创建一个特定锁类型(公平锁/非公平锁)的 ReentrantLock 的实例. 默认是非公平锁. |
+
+**成员方法**:
+
+|                           方法名                            |                            描述                            |
+| :---------------------------------------------------------: | :--------------------------------------------------------: |
+|                     int getHoldCount()                      | 查询当前线程保持此锁定的个数, 也就是调用lock() 方法的次数. |
+|                 protected Thread getOwner()                 |      返回当前拥有此锁的线程, 如果不拥有, 则返回 null       |
+|           protected Collection getQueuedThreads()           |          返回包含可能正在等待获取此锁的线程的集合          |
+|                    int getQueueLength()                     |              返回等待获取此锁的线程数的估计.               |
+| protected Collection getWaitingThreads(Condition condition) |  返回包含可能在与此锁相关联的给定条件下等待的线程的集合.   |
+|         int getWaitQueueLength(Condition condition)         |       返回与此锁相关联的给定条件等待的线程数的估计.        |
+|           boolean hasQueuedThread(Thread thread)            |               查询给定线程是否等待获取此锁.                |
+|                 boolean hasQueuedThreads()                  |              查询是否有线程正在等待获取此锁.               |
+|           boolean hasWaiters(Condition condition)           |         查询任何线程是否等待与此锁相关联的给定条件         |
+|                      boolean isFair()                       |          如果此锁的公平设置为 true, 则返回 true.           |
+|               boolean isHeldByCurrentThread()               |                查询此锁是否由当前线程持有.                 |
+|                     boolean isLocked()                      |                查询此锁是否由任何线程持有.                 |
+
+### Condition 
+
+Condition 是 Java 提供来实现等待/通知的类, Condition 类还提供比 wait/notify 更丰富的功能. Condition 对象是由 lock 对象所创建的, 但是同一个锁可以创建多个 Condition 的对象, 即创建多个对象监视器, 这样的好处是: 可以指定唤醒的线程. Condition 将 Object 监视器方法(wait, notify, notifyAll)分解成截然不同的对象, 以便通过将这些对象与任意 Lock 实现组合使用, 为每个对象提供多个 等待 set(wait-set). 其中, Lock 替代了 synchronized 方法和语句的使用, Condition 替代了 Object 监视器方法的使用. 要创建一个 Lock 的 Condition, 必须使用 `newCondition()` 方法.
+
+**成员方法**:
+
+|                方法名称                 |                    描述                    |
+| :-------------------------------------: | :----------------------------------------: |
+|              void await()               |        相当于 Object 类的 wait 方法        |
+| boolean await(long time, TimeUnit unit) | 相当于 Object 类的 wait(long timeout) 方法 |
+|                signal()                 |       相当于 Object 类的 notify 方法       |
+|               signalAll()               |     相当于 Object 类的 notifyAll 方法      |
+
+> 调用 `signal()` 和 `signalAll()` 方法, 会在执行完方法当前所在的 try 语句块后才释放锁.
+>
+> **注意**: 必须在 condition.await() 方法调用之前调用 lock.lock() 代码获得同步监视器, 否则会报错.
+
+### 公平锁与非公平锁
+
+Lock 锁分为: 公平锁和非公平锁. 
+
+- 公平锁: 表示线程获取锁的顺序是**按照线程加锁的顺序来分配的**. 即先来先得的FIFO.
+- 非公平锁: 一种获取锁的强占机制, **是随机获取锁,**. 
+
+### ReentrantReadWriteLock
+
+之前的 ReentrantLock(排他锁)具有完全互斥排他的效果, 即同一时刻只允许一个线程访问, 虽然保证了实例变量的线程安全性, 但是效率较低. ReentranReadWriteLock 读写锁能够解决这个问题.
+
+读写锁维护了两个锁, 一个是读操作相关的锁, 叶成文共享锁; 一个是写操作相关的锁, 也称为排他锁. 通过分离读锁和写锁, 其并发性比一般排他锁性能高. 
+
+多个读锁之间不互斥, 读锁与写锁互斥, 写锁与写锁互斥.(只要出现写操作的过程就是互斥的)
+
+#### 特性与方法
+
+|    特性    |                             说明                             |
+| :--------: | :----------------------------------------------------------: |
+| 公平性选择 | 支持非公平(默认)和公平的锁获取方式, 吞吐量上来看还是非公平优于公平 |
+|   重进入   | 该锁支持重进入, 以读写线程为例: 读线程在获取了读锁之后, 能够再次获取读锁. 而写线程在获取了写锁之后能够再次获取写锁也能够同时获取读锁 |
+|   锁降级   | 遵循获取写锁, 获取读锁再释放写锁的次序, 写锁能够降级成为读锁 |
+
+|                方法名                |                             描述                             |
+| :----------------------------------: | :----------------------------------------------------------: |
+|       ReentrantReadWriteLock()       |           创建一个 ReentrantReadWriteLock() 的实例           |
+| ReentrantReadWriteLock(boolean fair) | 创建一个特定锁类型(公平锁/非公平锁)的ReentrantReadWriteLock 的实例 |
+
+分别使用 `lock.readLock().lock()` 和 `lock.writeLock().lock()` 获取锁.
+
+## 锁的状态
+
+JDK1.6 为了减少获得锁和释放锁所带来的性能消耗, 引入了"偏向锁"和"轻量级锁". 所以锁一共有 4 种状态: 无锁状态, 偏向锁状态, 轻量级锁状态和重量级锁状态, 它会随着竞争情况逐渐升级. 锁可以升级但不能降级, 意味着偏向锁升级成轻量级锁后不能降级成偏向锁. 这种只升不降的策略, 目的是为了提高获得锁和释放锁的效率.
+
+### 偏向锁
+
+在没有实际竞争的情况下, 还能针对部分场景继续优化. 如果不仅仅没有实际竞争, 自始至终, 使用锁的线程都只有一个, 那么, 维护轻量级锁都是浪费的.
+
+偏向锁的目标是: 减少无竞争且只有一个线程使用锁的情况下, 使用轻量级锁产生的性能消耗. 轻量级锁每次申请, 释放锁都至少需要一次 [CAS](#CAS), 但偏向锁只有初始化时需要一次 CAS. "偏向"的意思是, 偏向锁假定将来只有**第一个申请锁的线程会使用锁**(不会有任何线程再来申请锁), 因此, 只需要在 Mark Word 中 CAS 记录 owner(本质上也是更新, 但初始值为空). 如果记录成功, 则偏向锁获取成功, 记录锁状态为偏向锁, 以后当前线程等于 owner 就可以零成本直接获得锁; 否则, 说明有其他线程竞争, 膨胀为轻量级锁.
+
+**偏向锁无法使用自旋锁优化**, 因为一旦有其他线程申请锁, 就破坏了偏向锁的假定.
+
+### 轻量级锁
+
+轻量级锁时有偏向锁升级来的, 偏向锁运行在一个线程进入同步块的情况下, 当第二个线程加入锁争用的时候, 偏向锁就会升级为轻量级锁. 
+
+![UTOOLS1554116792119.png](https://i.loli.net/2019/04/01/5ca1f0b76b38e.png)
+
+轻量级锁是在没有多线程竞争的前提下, 减少传统的重量级锁使用产生的性能消耗. 轻量级锁所适应的场景是线程交替执行同步块的情况, 如果存在同一时间访问同一锁的情况, 就会导致轻量级锁升级为重量级锁. 使用轻量级锁时, 不需要申请互斥量, 仅仅将 Mark Word 中的部分直接 CAS 更新子项线程栈中的 Lock Record, 如果更新成功, 则轻量级锁获取成功, 记录锁的状态为轻量级锁; 否则, 说明已经有线程获得了轻量级锁, 目前发生了锁竞争, 接下来就膨胀为重量级锁.
+
+![UTOOLS1554116775863.png](https://i.loli.net/2019/04/01/5ca1f0a760ea0.png)
+
+### 重量级锁
+
+重量级锁在 JVM 中又叫对象监视器(Monitor), 至少包含一个竞争锁队列, 和一个信号阻塞队列(wait 队列), 前者负责做互斥, 后者用于做线程同步.
+
+### 自旋锁
+
+自旋锁原理十分简单, 如果持有锁的线程能在很短时间释放锁资源, 那么那些等待竞争锁的线程就不需要做内核态和用户态之间的切换进入阻塞挂起状态, 它们只需要等一等(自旋), 等待有锁的线程释放锁后即可立即获取锁. 这样就避免用户线程和内核的切换的消耗. 但是线程自旋需要消耗 CPU, 如果一直获取不到锁, 那线程也不能一直占用 CPU 自旋做无用功, 所以需要设定一个自旋等待的最大时间. 如果持有锁的线程执行的时间超过自旋等待的最大时间仍没有释放锁, 就会导致其他争用锁的线程在最大等待时间内获取不到锁, 这时争用线程会停止自旋进入阻塞状态.
+
+### 自适应自旋锁
+
+自适应意味着**自旋的时间不在固定**, 而是由前一次在同一个锁上的自旋时间及锁的拥有者的状态来决定:
+
+- 如果在同一个锁对象上, 自旋等待刚刚陈宫获得过锁, 并且持有锁的线程正在运行中, 那么 JVM 就会任务这次自旋很可能**再次成功**. 进而允许自旋等待时间持续相对更长的时间, 比如 100个循环.
+- 相反, 如果对于某个锁, 自旋很少成功获得过, 那么在以后要获取这个锁时将可能减少自旋时间甚至直接略过自旋过程, 以避免浪费处理器资源.
+
+
+
+偏向锁 轻量级锁 重量级锁适用于不同的并发场景
+
+- 偏向锁: 无实际竞争, 且将来只有第一个申请锁的线程会使用锁.
+- 轻量级锁: 无实际竞争, 多个线程交替使用锁, 允许短时间的锁竞争.
+- 重量级锁: 有实际竞争, 且锁竞争时间长.
+
+> 如果锁竞争时间段, 可以使用自旋锁进一步优化轻量级锁, 重量级锁的性能力, 减少线程切换. 如果锁竞争程度逐渐提高, 那么偏向锁逐步膨胀到重量级锁, 能够提高系统整体性能.
+
+**锁膨胀的过程**: 只有一个线程进入临界区(偏向锁), 多个线程交替进入临界区(轻量级锁), 多线程同时进入临界区(重量级锁).
+
+### 优缺点对比
+
+|    锁    |                             优点                             |                      缺点                      |               适用场景               |
+| :------: | :----------------------------------------------------------: | :--------------------------------------------: | :----------------------------------: |
+|  偏向锁  | 加锁和解锁不需要额外消耗, 和执行非同步方法相比较仅存在纳秒级的差距 | 如果线程间存在锁竞争, 会带来额外的锁撤销的消耗 |  适用于只有一个线程访问同步块的场景  |
+| 轻量级锁 |           竞争的线程不会阻塞, 提高了程序的响应速度           | 如果始终得不到锁竞争的线程, 使用自旋会消耗 CPU | 追求响应时间<br>同步块执行速度非常快 |
+| 重量级锁 |               线程竞争不使用自旋, 不会消耗 CPU               |             线程阻塞, 响应时间缓慢             |   追求吞吐量<br>同步块执行速度较慢   |
+
+
+
+## CAS
+
+### CAS(Compare and swap) 简介
+
+使用锁时, 线程获取锁是一种**悲观锁策略**, 即假设每一次执行临界区代码都会产生冲突, 所以当前线程获取到锁的时候同时也会阻塞其他线程获取该锁. synchronized 关键字的实现就是悲观锁.
+
+而 CAS 操作(又称为无锁操作), 是一种**乐观锁策略**. 它假设所有线程访问共享资源的时候不会出现冲突, 既然不会出现冲突, 自然而然就不会阻塞其他线程的操作. 因此, 线程就不会出现阻塞停顿的状态.
+
+如果出现冲突怎么办? 无锁操作是使用 CAS 又叫做比较交换来**鉴别线程是否出现冲突**, 在更新的时候去判断此期间有没有人更新数据, 如果因为冲突失败, 就重试.
+
+适用于写比较少的情况下, 即冲突较少发生, 这样可以省去了锁的开销, 加大系统的吞吐量.
+
+### 乐观锁的实现方式 CAS
+
+乐观锁的实现主要两个步骤: 冲突检测和数据更新.
+
+CAS 是乐观锁技术, 当多个线程尝试使用 CAS 同时更新同一个变量时, 只有其中一个线程能更新变量的值, 而其他线程都失败. 失败的线程并不会被挂起, 而是被告知这次竞争中失败, 可以再次尝试. CAS 操作中包含三个操作数:
+
+1. 需要读写的内存位置(V)
+2. 进行比较的预期原值(A)
+3. 拟写入的新值(B)
+
+如果内存位置V的值与预期原值A相匹配, 那么处理器会自动将该位置值更新为新值B. 否则处理器不做任何操作. 无论哪种情况, 它都不会在 CAS 指令之前返回该位置的值.(在 CAS 的一些特殊情况下将仅返回 CAS 是否成功, 而不提取当前值)CAS 有效地说明了: 我认为位置V应包含值A, 如果包含, 则将B放到这个位置, 否则, 不要更改该位置, 只告诉我这个位置的值即可.
+
+### CAS 的缺点
+
+1. ABA 问题
+
+   > 如果内存地址V初次读取的值是A, 并且在准备赋值的检查到它的值仍然为A, 那我们就能说它的值没有被其他线程改过了吗? 如果这段期间它的值曾经被改成了B, 后来又被改回为A, 那CAS操作就会误认为从来没有被改变过. ava 并发包为了解决这个问题, 提供了一个带有标记的原子引用类 AtomicStampedReference, 它可以通过控制变量值的版本来保证 CAS 的正确性.
+   >
+   > 因此, 在使用 CAS 前要考虑清楚 ABA 问题是否影响程序并发的正确性, 如果需要解决 ABA 问题, 改用传统的互斥同步可能比原子类更高效.
+
+2. 循环时间长开销大
+
+   > 自旋 CAS (不成功, 就一直循环执行, 直到成功)如果长时间不成功, 会给 CPU 带来非常大的执行开销.
+
+3. 只能保证一个共享变量的原子操作
+
+   > 当对一个共享变量执行操作时, 我们可以使用循环 CAS 的方式保证原子操作, 但是对多个共享变量操作室, 循环 CAS 就无法保证操作的原子性, 这个时候可以用锁来保证原子性. 或者将多个共享变量存储在一个对象中.
+
+## 上下文切换
+
+当前任务在执行完 CPU 时间片切换到另一个任务之前会保存自己的状态, 以便下次在切换回这个任务时, 可以再加载这个任务的状态. **任务从保存到再加载的过程就是一次上下文切换**.
+
+上下文切换通常是计算密集型的. 也就是说, 它需要相当可观的处理器时间, 在每秒几十上百次的切换中, 每次切换都需要纳秒量级的时间, 所以, **上下文切换对系统来说意味着消耗大量的 CPU 时间**. 事实上, 可能是操作系统中时间消耗量最大的操作.
+
+> Linux 相比于其他操作系统有很多优点, 其中一项就是: 其上下文切换和模式切换的时间消耗非常少
+
+### 减少上下文切换
+
+上下文切换又分为 2 种: 让步式上下文切换 和 抢占式上下文切换. 
+
+前者是指: 执行线程主动释放 CPU, 与锁竞争严重程度成正比, 可通过减少锁竞争和使用CAS算法来避免
+
+后者是指: 线程因分配的时间片用尽而被迫放弃 CPU, 或者被其他优先级更高的线程所强占, 一般由于线程数大于 CPU 可用核心数引起, 可通过适当减少线程数和使用协程来避免
+
+总结:
+
+1. 减少锁的使用. 多个线程竞争锁时会引起上下文切换
+2. 使用 CAS 算法. 这种算法也是为了减少锁的使用.
+3. 减少线程的使用. 
+4. 使用协程
+
+## 线程池
+
+如果并发的线程数量很多, 并且每个线程都是执行一个时间很短的任务就结束了, 这样频繁创建线程就会大大降低系统的效率, 因为频繁创建线程和销毁线程需要时间. 线程池的产生和数据库的链接类似, 系统启动了一个线程的代价是比较高昂的, 如果在程序启动的时候就初始化一定数量的线程, 放入线程池中, 在需要使用时从线程池中取, 用完再放回池中, 这样能大大地提高程序性能. 再者, 线程池的一些初始化配置, 也可以有效的控制系统的并发数量, 防止因为消耗过多的内存.
+
+**线程池**提供了一种限制和管理资源(包括执行一个任务). 每个线程池还维护一些基本信息, 例如已完成任务的数量.
+
+### 使用线程池的好处
+
+- **降低资源消耗**. 通过重复利用已创建的线程降低线程创建和销毁造成的消耗.
+- **提高响应速度**. 当任务到达时, 任务可以不需要等到线程创建就能立即执行.
+- **提高线程的可管理性**. 线程时稀缺资源, 如果无线地创建, 不仅会消耗系统资源, 还会降低系统的稳定性, 使用线程池可以进行统一的分配, 调优和监控.
+
+### Executor 框架
+
+Executor 框架主要有三大部分组成:
+
+1. 任务
+
+   执行任务需要实现 Runnable 或 Callable 接口. 这两个接口的实现类都可以被 ThreadPoolExecutor 或 ScheduledThreadPoolExecutor 执行.=
+
+2. 任务的执行
+
+   包括任务执行机制的核心接口 Executor 以及继承自 Executor 接口的 ExecutorService 接口. ScheduledThreadPoolExecutor 和 ThreadPoolExecutor 这两个关键类实现了 ExecutorService 接口.
+
+3. 异步计算的结果
+
+   Future 接口以及 Future 接口的实现类 FutureTask 类.
+
+   当我们把 Runnable 接口或 Callable 接口的实现类提交(调用 submit 方法)给 ThreadPoolExecutor 或 ScheduledThreadPoolExecutor 时, 会返回一个 FutureTask 对象.
+
+#### Executor 框架流程图
+
+![0062LbXpgy1g16ok0z7hcj30fl0akwg7.jpg](https://i.loli.net/2019/03/29/5c9e248554755.jpg)
+
+1. 主线程首先创建实现 Runnable 或 Callable 接口的任务对象
+
+   > 工具类 Executors 可以实现 Runnable 对象和 Callable 对象之间的相互转换
+   >
+   > Executor.callable(Runnable task) 或 Executors.callable(Runnable task, Object result).
+
+2. 把创建完成的 Runnable 对象直接交给 ExecutorService 执行
+
+   > ExecutorService.execute(Runnable command), ExecutorService.submit(Runnable task), ExecutorService.submit(Callable task).
+   >
+   > **执行 `execute()` 和 `submit()` 方法的区别:**
+   >
+   > - execute() 方法用于提交不需要返回值的任务, 所以无法判断任务是否被线程池执行成功.
+   >
+   > - submit() 方法用于提交需要返回值的任务, 线程池会返回一个 Future 类型的对象, 通过这个 Future 对象可以判断任务是否执行成功.
+   >
+   >   并且可以通过 Future 的 get() 方法来获取返回值. `get()` 方法会阻塞当前线程直到任务完成, 而使用 `get(long timeout, TimeUnit unit)` 方法则会阻塞当前线程一段时候后立即返回, 无论任务是否执行完.
+
+3. 如果执行 ExecutorService.submit(), ExecutorService 将返回一个实现 Future 接口的对象
+
+   > 目前 JDK 中返回的是 FutureTask 对象. 由于 FutureTask 实现了 Runnable, 开发者也可以创建 FutureTask, 然后交给 ExecutorService 执行.
+
+4. 主线程可以执行 FutureTask.get() 方法来等待任务执行完成, 主线程也可以执行 FutureTask.cancel(boolean mayInterruptIfRunning) 来取消此任务的执行.
+
+### ThreadPoolExecutor
+
+ThreadPoolExecutor 是 Executor 框架的核心类.
+
+**重要属性**:
+
+![UTOOLS1552872569360.png](https://i.loli.net/2019/03/18/5c8ef47a449f0.png)
+
+- RejectedExecutionHandler: 当 ThreadPoolExecutor 已经关闭或饱和时(达到最大线程池大小且工作队列已满), execute() 方法将要调用 Handler.
+- MaximumPoolSize: 最大线程池大小.
+- Queue: 用来暂时保存任务的工作队列.
+- corePoolSize: 核心线程池大小.
+
+#### 创建 ThreadPoolExecutor
+
+在《阿里巴巴Java开发手册》并发处理这一章节, 明确指出线程资源必须通过线程池提供, 不允许在应用中自行显示创建线程.
+
+> 使用线程池的好处是在创建和销毁线程上所消耗的时间以及系统资源开销, 解决资源不足的问题. 如果不使用线程池, 有可能会造成系统创建大量同类线程而导致消耗完内存或者"过度切换"的问题.
+
+同时强制线程池不允许使用 Executors 去创建, 而是通过 ThreadPoolExecutor 的方式, 这样的处理方式能让开发者更加明确线程池的运行规则, 规避资源耗尽的风险
+
+> Executors 返回线程池对象的弊端如下:
+>
+> - FixedThreadPool 和 SingleThreadExector: 允许请求的队列长度为 Integer.MAX_VALUE, 可能堆积大量请求, 从而导致 OOM
+> - CachedThreadPool 和 ScheduledThreadPool: 允许创建的线程数量为 Integer.MAX_VALUE, 可能会创建大量线程, 从而导致 OOM
+
+##### 方式一: 通过构造方法实现
+
+![0062LbXpgy1g16p6n2kykj30pp04egm4.jpg](https://i.loli.net/2019/03/29/5c9e24a1d225f.jpg)
+
+##### 方式二: 通过 Executors 工具类创建, 常见的有 4 种:
+
+- newCachedThreadPool: 大小不受限, 当线程释放时, 可重用该线程.
+
+  适用于执行很多的短期异步任务的小程序, 或者是负载较轻的服务器.
+
+- newFixedThreadPool: 大小固定, 无可用线程时, 任务需等待, 直到有可用线程.
+
+  适用于为了满足资源管理需求, 而需要限制当前线程数量的应用场景. 适用于负载较重的服务器.
+
+- newSingleThreadExecutor: 创建一个但线程, 任务会按顺序依次执行.
+
+  适用于需要单个后台线程执行周期任务, 同时保证顺序地执行各个任务的应用场景.
+
+- newScheduledThreadPool: 创建一个定长线程池, 支持定时及周期性任务执行.
+
+  适用于需要多个后台执行周期任务, 同时为了满足资源管理需求而需要限制后台线程的数量的应用场景
+
+## 参考资料
+
+- 互联网校招面试必备——Java多线程: <https://juejin.im/post/5ba133126fb9a05ce02a6f12>
+- Java多线程学习: <https://blog.csdn.net/qq_34337272/article/details/79640870>
+
+- 彻底理解synchronized: <https://juejin.im/post/5ae6dc04f265da0ba351d3ff>
+- <https://juejin.im/post/5ba133126fb9a05ce02a6f12#heading-11>

@@ -1,0 +1,580 @@
+---
+title: Docker介绍
+date: 2019/05/05 11:36
+categories:
+- Docker
+tags:
+- Docker
+---
+
+## 简介
+
+Docker 是基于 Go 语言实现的云开源项目. Docker 的主要目标是: "Build, Ship and Run Any App, Anywhere", 也就是通过对应用组件的封装, 分发, 部署, 运行等生命周期的管理, 使用户的 APP(可以使一个 WEB 应用或数据库应用等)及其运行环境能够做到"一次封装, 到处运行".
+
+Linux 容器技术(Linux Containers)的出现就解决了这样一个问题, Docker 就是在它的基础上发展过来的. 将应用运行在 Docker 容器上面, 而 Docker 容器在任何操作系统上都是一致的, 这就实现了跨平台, 跨服务器. 
+
+### 什么是容器
+
+容器就是将软件打包成标准化单元, 以用于开发, 交付和部署.
+
+- **容器镜像是轻量的, 可执行的独立软件包**. 包含了软件运行所需的所有内容: 代码, 运行时环境, 系统工具, 系统库和设置.
+- **容器化软件在任何环境中都能够始终如一地运行**.
+- **容器赋予了软件独立性**, 使其免受外在环境差异的影响, 从而有助于减少团队间在相同基础设施上运行不同软件时的冲突.
+
+### 什么是 Docker
+
+- Docker 是世界领先的软件容器平台.
+- Docker 使用 Go 语言实现, 基于 Linux 内核的 cgroup, namespace, 以及 AUFS 类的 UnionsFS 等技术, 对进程进行封装隔离, 属于操作系统层面的虚拟化技术.
+- Docker 能够自动执行重复性任务, 例如搭建和配置开发环境, 从而解放了开发人员以便他们专注在真正重要的事情上: 构建杰出的软件.
+- 用户可以方便地创建和使用容器, 把自己的应用放入容器. 容器还可以进行版本管理, 复制, 分享和修改, 就像管理普通的代码一样.
+
+#### Docker 容器的特点
+
+- **轻量**
+
+  在一台机器上运行的多个 Docker 容器可以共享这台机器的操作系统内核; 它们能够迅速启动, 只需占用很少的计算和内存资源. 
+
+- **标准**
+
+  Docker 容器基于开放式标准, 能够在所有主流 Linux 版本, Microsoft Windows 以及包括 VM 和云在内的任何基础设施上运行.
+
+- **安全**
+
+  Docker 赋予应用的隔离性不仅限于彼此, 还独立于底层的基础设施. Docker 默认提供最强的隔离, 因此应用出现问题, 也只是单个容器的问题, 而不会波及到整台机器.
+
+#### 为什么要使用 Docker
+
+- **一致的运行环境**
+
+  Docker 镜像提供了除内核外完整的运行时环境, 确保了应用运行环境一致性.
+
+- **更快速的启动时间**
+
+  可以做到秒级, 甚至毫秒级的启动时间. 大大节约了开发, 测试和部署的时间.
+
+- **隔离性**
+
+  避免公用的服务器, 资源容易受到其他用户的影响.
+
+- **弹性伸缩, 快速扩展**
+
+  善于处理集中爆发的服务器使用压力.
+
+- **迁移方便**
+
+  可以很轻易的将在一个平台上运行的应用, 迁移到另一个平台上, 而不用担心运行环境的变化所导致应用无法正常运行的情况.
+
+- **持续交付和部署**
+
+  使用 Docker 可以通过定制应用镜像来实现持续集成, 持续交付和部署.
+
+![新浪 Docker](https://i.loli.net/2019/05/05/5cce719da9560.png)
+
+![美团 Why Docker](https://i.loli.net/2019/05/05/5cce712c6b876.png)
+
+![蘑菇街 Docker](https://i.loli.net/2019/05/05/5cce715b6f064.png)
+
+### 容器与虚拟机
+
+**容器与虚拟机不同**, 传统虚拟机技术是虚拟出一套硬件后, 在其之上运行一个完整的操作系统, 然后在该系统上再运行所需应用进程; 而容器内的应用进程直接运行于**宿主机的内核**, 容器没有自己的内核, 而且也没有进行硬件虚拟. 因此容器要比传统虚拟机更为轻便.
+
+![容器VS虚拟机](https://i.loli.net/2019/05/05/5cce674c50bbd.png)
+
+|    特性    |           容器           |           虚拟机            |
+| :--------: | :----------------------: | :-------------------------: |
+|  部署速度  |           秒级           |           分钟级            |
+|  存储大小  |         一般为MB         |          一般为GB           |
+|  运行性能  |    几乎无额外性能开销    | 操作系统额外的CPU, 内存消耗 |
+| 系统支持量 |    单机支持上千个容器    |         一般几十个          |
+|   移植性   | 轻便, 灵活, 适应于 Linux | 笨重, 与虚拟化技术耦合度高  |
+| 硬件亲和性 |      面向软件开发者      |       面向硬件运维者        |
+
+- 容器是一个应用层抽象, 用于将代码和依赖资源打包在一起. 多个容器可以在同一台机器上运行, 共享操作系统内核, 但各自的环境是隔离开来的.
+- 虚拟机是一个物理硬件层的抽象, 用于将一台服务器变为多台服务器. 管理程序允许多个 VM 在一台机器上运行, 每个 VM 都包含一整套操作系统, 因此占用的空间更大, 启动也较慢.
+
+虚拟机更擅长于彻底隔离整个运行环境, 例如: 云服务提供商通常采用虚拟机技术隔离不同的用户. 而 Docker 通常用于隔离不同的应用, 例如: 通过一个 Tomcat 镜像, 启动多个 Tomcat 容器, 每个容器中 Tomcat 的环境配置都是彼此隔离的.
+
+## Docker 基本概念
+
+![UTOOLS1557032229407.png](https://i.loli.net/2019/05/05/5cce6d24ec692.png)
+
+### 镜像(Image)
+
+**操作系统分为内核和用户空间**. 对于 Linux 而言, 内核启动后, 会挂在 root 文件系统为其提供用户空间支持. 而 Docker 镜像 就相当于是一个 root 文件系统.
+
+*镜像*是一个特殊的文件系统, 除了提供容器运行时所需的程序, 库, 资源, 配置等文件外, 还包含了一些为运行时准备的一些参数(如*匿名卷*, *环境变量*, *用户*等, 通过 DockerFile 配置). 镜像不包含任何动态数据, 其内容在构建之后不会被改变.
+
+Docker 设计时就充分利用了 Union FS 技术, 将其设计为*分层存储架构*. 镜像实际是由多层文件系统联合组成, 如下图蓝色部分所示: 
+
+![UTOOLS1557033472811.png](https://i.loli.net/2019/05/05/5cce71ff2929c.png)
+
+**镜像构建时, 会一层一层构建, 前一层是后一层的基础. 每一层构建完成就会形成一个镜像, 不会发生改变, 后一层上的任何改变只发生在自己其自身这一层.** 比如: 删除前一层文件的操作, 实际不是真的删除前一层的文件, 而是仅在当前层标记为该文件已删除, 在容器最终运行的时候, 虽然不会看到这个文件, 但是实际上该文件会一直跟随镜像. 因此, 在构建镜像时, 需要额外小心, 每一层尽量只包含该层需要添加的东西, 任何额外的东西应该在该层构建结束前清理掉.
+
+分层存储的特征还使得镜像的复用, 定制变得更为容易. 甚至可以用之前构建好的镜像作为基础层, 然后进一步添加新的层, 以定制自己所需的镜像.
+
+### 容器(Container)
+
+*镜像(Image)*和*容器(Container)*的关系, 就像是面向对象设计中的*类*和*实例*一样, *镜像*是静态的定义, *容器*是镜像运行的实体. *容器*可以执行创建, 启动, 停止, 删除和暂停等操作.
+
+*容器*的实质是进程, 但与直接在宿主执行的进程不同, 容器进程运行于属于自己的独立的*命名空间*. 
+
+*容器存储层*的生存周期和*容器*一样, 容器消亡时, 容器存储层也随之消亡. 因此, **任何保存于容器存储层的信息都会随容器删除而丢失**.
+
+**注意: **按照 Docker 最佳实践的要求, 容器不应该向其存储层写入任何数据, 容器存储层要保持无状态化. 所有的文件写入操作都应该使用*数据卷(Volume)*, 或者绑定宿主目录, 在这些位置的读写会跳过容器存储层, 直接对宿主(网络存储)发生读写, 其性能会稳定性更高. 数据卷的生存周期独立于容器, 容器消亡, 数据卷不会消亡. 因此, 使用数据卷后, 容器可以随意删除, 重新运行, 数据不会丢失.
+
+### 仓库(Repository)
+
+镜像构建完成后, 可以很容易地在当前宿主上运行. 但是如果要在其他服务器上使用这个镜像, 我们就需要一个集中存储, 分发镜像的服务. Docker Registry 就是这样的服务.
+
+一个 Docker Registry 中可以包含多个*仓库(Repository)*; 每个仓库可以包含多个*标签(Tag)*; 每个标签对应一个*镜像(Image)*. 所以说: 镜像仓库是 Docker 用来集中存放镜像文件的地方, 类似于代码仓库.
+
+通常来讲, 一个仓库会包含同一个软件不同版本的*镜像*, 而*标签*就常用于对应该软件的各个版本. 通过 `<仓库名>:<标签>` 的格式, 我们可以来指定该软件的具体版本的*镜像*. 如果不提供*标签*, 将以 `latest` 作为默认标签.
+
+Docker Registry 可分为公共和私有, 意味着我们可以自行搭建 Docker Registry. Docker 官方提供了 Docker Registry 的镜像, 可以直接使用作为私有 Registry 服务. 开源的 Docker Registry 镜像只提供了 Docker Registry API 的服务端实现, 足以支持 Docker 命令, 不影响使用, 但不包含图形界面, 以及镜像维护, 用户管理, 访问控制等高级功能.
+
+最常使用的 Registry 公开服务是官方的 [Docker Hub](<https://hub.docker.com/>), 这也是 Docker 默认的 Registry, 但在**国内访问比较慢**. 国内常使用的有: [阿里云](<https://www.aliyun.com/product/containerservice>), [网易云](<https://www.163yun.com/product/repo>).
+
+### 数据卷(Volume)
+
+> Volumes are the preferred mechanism for persisting data generated by and used by Docker containers. While [bind mounts](https://docs.docker.com/storage/bind-mounts/) are dependent on the directory structure of the host machine, volumes are completely managed by Docker. Volumes have several advantages over bind mounts:
+>
+> - Volumes are easier to back up or migrate than bind mounts.
+> - You can manage volumes using Docker CLI commands or the Docker API.
+> - Volumes work on both Linux and Windows containers.
+> - Volumes can be more safely shared among multiple containers.
+> - Volume drivers let you store volumes on remote hosts or cloud providers, to encrypt the contents of volumes, or to add other functionality.
+> - New volumes can have their content pre-populated by a container.
+
+为了持久化数据以及共享容器间的数据, Docker 提出了*数据卷(Volume)*的概念. 简单来说, 数据卷就是目录或者文件, 它可以绕过默认的 UnionFS(联合文件系统), 而以正常的文件或目录的形式存在于宿主机上.
+
+#### 使用
+
+##### 通过 -v 方式添加
+
+命令 `docker run -v [host-dir]:[container-dir]:[rw|wo|ro]`, 其中:
+
+- host-dir: 表示宿主机上的目录, 如果不存在, Docker 会自动创建该目录.
+- container-dir: 表示容器内部对应的目录, 如果该目录不存在, Docker 也会在容器内部创建该目录.
+- rw|ro|wo: 控制数据卷的读写权限.(ro -> read only, wo -> write only)
+
+如果不指定 host-dir, Docker 会自动创建一个目录, 如: `/var/lib/docker/volumes/.../_data`. 这种情况通常发生在通过 DockerFile 设置数据卷时.
+
+##### 通过 DockerFile 添加
+
+在 DockerFile 文件中通过 `VOLUME [${container-dir1},${container-dir2},"..."]` 的形式为镜像配置一个或多个数据卷. 这时会在宿主机中自动添加相对应的目录. 可以通过 `docker inspect ${容器ID}` 查看.
+
+##### 通过 --volumes-from 挂载
+
+很多时候, 我们想让多个容器共享一些数据, 这时我们可以创建一个*数据卷容器*.
+
+命令 `docker run --volumes-from ${父容器ID}` 可以使新创建的容器共享父容器的数据卷. 
+
+容器之间配置信息的传递, 数据卷的生命周期一直持续到没有容器使用它位置.
+
+### DockerFile
+
+DockerFile 是用来构建 Docker 镜像的构建文件, 是由一行行命令和参数构成的脚本. 
+
+#### 保留字指令
+
+**基础**:
+
+1. 支持以 `#` 开头的注释.
+2. 每条保留字指令都约定为**大写**.
+3. 每条指令后面必须跟随**至少一个参数**.
+4. 执行按照从上到下顺序执行.
+5. **每条指令都会创建一个新的镜像层**, 并对镜像进行提交.
+
+##### FROM
+
+指定 base image.
+
+```dockerfile
+FROM <image>:<tag>
+FROM scratch   # 制作base image
+FROM centos    # 使用base images
+```
+
+##### LABEL
+
+元数据
+
+```dockerfile
+LABEL <key>=<value> ...
+LABEL maintainer = "vnaso@live.com"
+LABEL version = "1.0"
+LABEL description = "hello world"
+```
+
+##### RUN
+
+在镜像的构建过程中执行特定的命令或安装软件, 并生成一个中间镜像.
+
+```dockerfile
+RUN <command> # shell 格式
+RUN ["excutable", "param1","param2"] # exec 格式
+```
+
+##### WORKDIR
+
+为接下来的 DockerFile 指令指定当前工作目录, 可多次使用, 如果使用的是相对路径, 则相对的是上一个工作目录. 类似于 shell 中的 `cd` 命令.
+
+```dockerfile
+WORKDIR /path/to/workdir
+```
+
+##### ENV
+
+在构建的镜像中设置环境变量, 在后续的 DockerFile 指令中可以直接使用, 也可以固化在镜像里, 在容器运行时依然有效.
+
+```dockerfile
+ENV <key> <value> # 无法再一行内设置多个变量
+ENY <key>=<value> # 可以设置多个环境变量 如果 <value> 中存在空格, 需要转义或用引号 "" 括起来
+ENV JAVA_HOME=/usr/java/jdk...\			CLASS_PATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib \
+PATH=$PATH:$GIT_HOME/bin:$MAVEN_HOME/bin:$JAVA_HOME/bin:$JRE_HOME/bin:
+```
+
+可以在运行时指定环境变量, `docker run --env <key>=<value>`.
+
+使用 `ENV` 可能会对后续的 DockerFile 指令造成影响, 如果只需要对一条指令设置环境变量, 可以使用: `RUN <key>=<value> <command>`.
+
+##### ADD & COPY
+
+`ADD`: 在构建镜像时, 复制上下文的文件到镜像内.
+
+```dockerfile
+ADD <src> ... <dest>
+ADD ["<src>",..."<dest>"]
+```
+
+`<src>` 可以是文件, 目录, 也可以是文件 URL. 可以使用模糊匹配(wildcards, 类似 shell 的匹配), 可以指定多个 `<src>`, 必**须是在上下文目录和子目录中**, 无法添加形如 `../a.txt` 这样的文件. 如果 `<src>` 是目录, 则**复制的是目录下所有的内容, 但不包括该目录**; 如果是压缩包, 则会以 `tar -x` 的方式解压后将内容复制到 `<dest>`. `<dest>` 可以是绝对路径, 也可以是相对 `WORKDIR` 目录的相对路径. 所有文件的 UID 和 GID 都是 0.
+
+`COPY`: 与 `ADD` 类似, 只是将上下文内的文件复制到镜像内, `COPY` 是在镜像内的复制, 格式与 `ADD` 一致.
+
+##### EXPOSE
+
+为构建的镜像设置监听端口, 使容器在运行时监听.
+
+```dockerfile
+EXPOSE <port> [<port> ...]
+```
+
+`EXPOSE` 指令并不会让容器监听 host 的端口, 如果需要, 需要在 `docker run` 时使用 `-p`, `-P` 参数来发布容器端口到 host 某个端口上.
+
+##### CMD
+
+指定容器运行时的默认参数, 如果出现多次, 以最后一次为准.
+
+```dockerfile
+CMD ["executable", "param1", "param2"] # exec 格式
+CMD command param1 param2 # shell 格式
+CMD ["param1", "param2"] # 省略可自行文件的 exec 格式, 这种写法使 CMD 中的参数当做 ENTRYPOINT 的默认参数, 此时 ENTRYPOINT 也应该是 exec 格式.
+```
+
+与 `RUN` 指令的区别: `RUN` 在构建的时候执行, 并生成一个新的镜像, `CMD` 在容器运行的时候执行, 在构建时不进行任何操作.
+
+##### ENTRYPOINT
+
+指定镜像的执行程序, 只有最后一条 `ENTRYPOINT` 指令有效.
+
+```dockerfile
+ENTRYPOINT <command> <param1> <param2> # shell 格式, PID 不为 1, 也接收不到 Unix 信号. 需要使用 exex 或 gosu 命令处理.
+ENTRYPOINT ["<executable>","<param1>","<param2>"] # exec 格式 PID 为1
+```
+
+`CMD` 和 `ENTRYPOINT` 至少得使用一个, `ENTRYPOINT` 应该被当做 Docker 的可执行程序, `CMD` 应该被当做 `ENTRYPOINT` 的默认参数.
+
+`docker run <image> <arg1> <arg2> ...` 会把之后的参数传递给 `ENTRYPOINT`, 覆盖 `CMD` 指定的参数. 可以用 `docker run --entrypoint` 来重置默认的 `ENTRYPOINT`.
+
+`ENTRYPOINT` 和 `CMD` 的关系:
+
+|                                | **No ENTRYPOINT**   | **ENTRYPOINT exec_entry p1_entry** | **ENTRYPOINT ["exec_entry", "p1_entry"]**      |
+| ------------------------------ | ------------------- | ---------------------------------- | ---------------------------------------------- |
+| **No CMD**                     | error, not allowed  | /bin/sh -c exec_entry p1_entry     | exec_entry p1_entry                            |
+| **CMD ["exec_cmd", "p1_cmd"]** | exec_cmd p1_cmd     | /bin/sh -c exec_entry p1_entry     | exec_entry p1_entry exec_cmd p1_cmd            |
+| **CMD ["p1_cmd", "p2_cmd"]**   | p1_cmd p2_cmd       | /bin/sh -c exec_entry p1_entry     | exec_entry p1_entry p1_cmd p2_cmd              |
+| **CMD exec_cmd p1_cmd**        | CMD exec_cmd p1_cmd | /bin/sh -c exec_entry p1_entry     | exec_entry p1_entry /bin/sh -c exec_cmd p1_cmd |
+
+##### VOLUME
+
+指定镜像内的目录为数据卷
+
+```dockerfile
+VOLUME ["/path/to/volume"]
+VOLUME /path/to/volume1 /path/to/volume2
+```
+
+在容器运行的时候, Docker 会把镜像中的数据卷内容复制到容器的数据卷中去.
+
+如果在接下来的 DockerFile 指令中修改了数据卷中的内容, 则修改无效.
+
+##### ONBUILD
+
+向镜像中添加一个*触发器(Trigger)*, 当以该镜像为 base image 再次构建新的镜像时, 会触发并执行其中的指令.
+
+```dockerfile
+ONBUILD [INSTRUCTION]
+# 在下一次以此镜像为base image的构建中，执行 ADD . /app/src, 将项目代目添加到新镜像中去
+ONBUILD ADD . /app/src
+```
+
+##### 总结
+
+![UTOOLS1557055279042.png](https://i.loli.net/2019/05/05/5ccec72ee31fa.png)
+
+#### DockerFile 构建过程解析
+
+![UTOOLS1557051524735.png](https://i.loli.net/2019/05/05/5cceb884c1aab.png)
+
+1. 从基础镜像运行一个容器.
+2. 执行一条指令, 对容器做出修改.
+3. 执行类似 docker commit 的操作提交一个新的镜像层.
+4. docker 再基于刚提交的镜像运行一个新的容器.
+5. 执行 DockerFile 中的下一条指令直到所有指令执行完成.
+
+#### .dockerignore 文件
+
+构建镜像时, Docker 需要先准备 `context`, 将所有需要的文件收集到进程中. 默认的 `context` 包含 DockerFile 目录中的所有文件, 但是实际上并不需要 `.git` 目录, `node_modules` 目录等内容. `.dockerignore` 的作用和语法类似于 `.gitignore`, 可以忽略一些不需要的文件, 这样可以有效加快镜像构建时间, 同时减少 Docker 镜像的大小.
+
+```dockerignore
+.git/
+node_modules/
+```
+
+### 常用指令
+
+##### docker 命令介绍
+
+```
+docker --help
+
+管理命令:
+  container   管理容器
+  image       管理镜像
+  network     管理网络
+命令：
+  attach      介入到一个正在运行的容器
+  build       根据 Dockerfile 构建一个镜像
+  commit      根据容器的更改创建一个新的镜像
+  cp          在本地文件系统与容器中复制 文件/文件夹
+  create      创建一个新容器
+  exec        在容器中执行一条命令
+  images      列出镜像
+  kill        杀死一个或多个正在运行的容器    
+  logs        取得容器的日志
+  pause       暂停一个或多个容器的所有进程
+  ps          列出所有容器
+  pull        拉取一个镜像或仓库到 registry
+  push        推送一个镜像或仓库到 registry
+  rename      重命名一个容器
+  restart     重新启动一个或多个容器
+  rm          删除一个或多个容器
+  rmi         删除一个或多个镜像
+  run         在一个新的容器中执行一条命令
+  search      在 Docker Hub 中搜索镜像
+  start       启动一个或多个已经停止运行的容器
+  stats       显示一个容器的实时资源占用
+  stop        停止一个或多个正在运行的容器
+  tag         为镜像创建一个新的标签
+  top         显示一个容器内的所有进程
+  unpause     恢复一个或多个容器内所有被暂停的进程
+```
+
+##### docker 基本命令
+
+![UTOOLS1557056691825.png](https://i.loli.net/2019/05/05/5cceccb4400f5.png)
+
+- 查看系统内核
+
+  ```bash
+  uname -r 
+  ```
+
+  docker 支持的 Linux 内核版本最低为 3.10.
+
+- 启动 docker
+
+  ```bash
+  systemctl start docker
+  ```
+
+- 查看 docker 版本
+
+  ```bash
+  docker version
+  ```
+
+- 显示 docker 系统信息
+
+  ```bash
+  docker info
+  ```
+  
+- 登录 docker
+
+  ```bash
+  docker login
+  ```
+
+##### 操作 docker 镜像
+
+- 测试
+
+  ```bash
+  docker run hello-world
+  ```
+
+- 检索 image
+
+  ```bash
+  docker search <image-name>
+  ```
+
+- 下载 image
+
+  ```bash
+  docker pull <image-name>
+  ```
+
+- 删除一个或多个镜像
+
+  ```bash
+  # 删除一个或多个镜像
+  docker rmi <image-name1> <image-name2>
+  ```
+
+- 显示一个镜像的历史
+
+  ```bash
+  docker history <image-name>
+  ```
+
+##### 容器相关
+
+- 新建并启动容器
+
+  ```bash
+  docker run [OPTIONS] <image-name> [COMMAND] [ARG...]
+  ```
+
+  --name="容器新名字": 为容器指定一个名称;
+  -d: 后台运行容器，并返回容器ID, 即启动守护式容器;
+  -i: 以交互模式运行容器，通常与 -t 同时使用;
+  -t: 为容器重新分配一个伪输入终端，通常与 -i 同时使用;l
+  -P: 随机端口映射;
+  -p: 指定端口映射，有以下四种格式
+
+  ```
+  ip:hostPort:containerPort
+  ip::containerPort
+  hostPort:containerPort
+  containerPort
+  ```
+
+- 创建并交互式进入容器
+
+  ```bash
+  docker run -i -t <image-name> /bin/bash
+  ```
+
+- 列出当前所有正在运行的容器
+
+  ```bash
+  docker ps [OPTIONS]
+  ```
+
+  -a: 列出当前所有正在运行的容器 + 历史上运行过的
+  -l: 显示最近创建的容器.
+  -n: 显示最近 n 个创建的容器.
+  -q: 静默模式, 只显示容器编号.
+  --no-trunc: 不截断输出.
+
+- 退出容器
+
+  ```bash
+  exit # 容器停止退出
+  Ctrl + P + Q # 容器不停止退出
+  ```
+
+- 启动容器
+
+  ```bash
+  docker start <container-id/name>
+  ```
+
+- 重启容器
+
+  ```bash
+  docker restart <container-id/name>
+  ```
+
+- 停止容器
+
+  ```bash
+  docker stop <container-id/name>
+  ```
+
+- 强制停止容器
+
+  ```bash
+  docker kill <container-id/name>
+  ```
+
+- 删除已停止的容器
+
+  ```bash
+  docker rm <container-id>
+  # 一次删除多个容器
+  docker rm -f $(docker ps -a -q)
+  docker ps -a -q | xargs docker rm
+  ```
+
+- 启动守护式容器
+
+  ```bash
+  docker run -d <container-name>
+  ```
+
+  要想 Docker 容器后台运行, 就必须有一个前台进程. 如果容器运行的命令不是一直挂起的命令, 会自动退出. 所以最好让程序以前台进程的方式运行.
+
+- 查看容器日志
+
+  ```bash
+  docker logs -f -t --tail <container-id>
+  ```
+
+  -t: 加入时间戳
+
+  -f: 跟随最新的日志打印
+
+  --tail n: 显示最后 n 条
+
+- 查看容器内运行的进程
+
+  ```bash
+  docker top <container-id>
+  ```
+
+- 查看容器内部细节
+
+  ```bash
+  docker inspect <container-id>
+  ```
+
+- 进入正在运行的容器并以命令行交互
+
+  ```bash
+  # 以交互式执行 /bin/bash
+  docker exec -it <container-id> /bin/bash
+  # 重新进入
+  docker attach <container-id>
+  ```
+
+  区别: attach 直接接入容器启动命令的终端, 不会启动新的进程; exec 是在容器中打开新的终端, 并且可以启动新的进程.
+
+- 从容器内拷贝文件到宿主机上
+
+  ```bash
+  docker cp <container-id>:<container-dir> <host-dir>
+  ```
+
