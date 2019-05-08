@@ -7,6 +7,42 @@ tags:
 - Git
 ---
 
+## 初始化
+
+### 初始化一个已经有内容了的目录
+
+如果本地已经有了内容, 但是还没有使用 Git 管理, 现在先在 Github 上创建了 Repository. 把项目同步到仓库的连招如下:
+
+```bash
+# 1 初始化
+git init
+# 2 暂存并提交
+git add .
+git commit -m "init"
+# 3 设置远程仓库
+git remote add <name> <url>
+# 4 推送到远端
+git push
+# 此时发现 ! [rejected]        master -> master (fetch first) 
+# 下面的黄色提示我们远程仓库有我们本地没有的工作(默认创建了README.txt), 推荐我们使用 git pull
+# 5 听话用 git pull
+git pull
+# 此时没有高亮的提示了, 但还是有白字提醒我们当前分支没有跟任何远程分支建立关联
+# 6 听话建立关联 
+git branch --set-upstream-to=origin/<branch> master
+# 7 总该 push 了吧
+git push
+# 此时提示  ! [rejected]        master -> master (non-fast-forward)
+# 下面黄色提示我们: 本地分支落后于远程分支, 尝试先 git pull
+# 由于远程分支创建了 README.txt, 所以如果直接 git pull 会被拒绝, 提示 refusing to merge unrelated histories
+# 8 上干货
+git pull --allow-unrelated-histories
+# 9 接下来就是正常操作了
+git add .
+git commit -m "init remote"
+git push
+```
+
 ## 远程仓库
 
 ### 解除与远程仓库的关联
@@ -25,6 +61,20 @@ git remote remove <name>
 ```bash
 git remote add <name> <url>
 ```
+
+
+
+## 分支管理
+
+### 合并分支并保留目标分支的提交记录
+
+如果合并没有冲突的分支, 想要保存下目标分支的提交记录, 可以禁止使用 *Fast-Forward* 模式.
+
+```bash
+git merge --no-ff <commit-id>
+```
+
+
 
 ## 撤销修改
 
@@ -72,6 +122,16 @@ git reset --hard <commit-id>
 # 更新 HEAD 和 暂存区, 会保留工作区.
 git reset <commit-id>
 ```
+
+## 查看
+
+### 查看某次 commit 的信息
+
+```bash
+git show <commmit-id>
+```
+
+
 
 ## 知识点
 
@@ -132,7 +192,44 @@ git reset <commit-id>
 ##### 总结
 
 - `reset --soft`: 执行步骤 1. 只回退 `commit` 的信息, 暂存区和工作区没有发生变化, 与回退之前保持一致. 如果要继续提交, 直接 `git commit` 即可.
-
 - `reset [--mixed]`: 执行步骤 1,2, 默认. 将 HEAD 重置到另外一个 commit, 且更新索引(暂存区)和 HEAD 相同. 工作区不会被更改.
-
 - `reset --hard`: 执行步骤 1,2,3. 彻底回到指定的 commit-id, 暂存区和工作区都会变为指定 commit-id 版本的内容.
+
+### Fast-Forward 模式
+
+简单的说就是, 当你视图合并两个分支时, 如果顺着一个分支走下去能够到达另一个分支, 那么 Git 在合并两者的时候只会简单地将指针向前推进, 因为这种情况下的合并操作没有需要解决的冲突 -- 这就叫做*快进(Fast-Forward)*.
+
+#### 示例
+
+提前做的工作为: 
+
+```
+master > git commit -m "init"
+master > git commit -m "a"
+master > git checkout -b second
+second > git commit -m "b1"
+second > git commit -m "b2"
+```
+
+![初始化现场](https://i.loli.net/2019/05/08/5cd25ab10fe58.png)
+
+现在处于 master 分支的 a commit, 想要合并 second 分支上的 b2 commit.
+
+直接使用 `merge second` 后, 结果如下:
+
+![1557290130149.png](https://i.loli.net/2019/05/08/5cd26337006e3.png)
+
+因为 b2 之于 a 只是领先了 2 个 commit, 即: master 是 second 的直接上游, 所以这种情况下 merge 会默认使用 *Fast-Forward* 模式, 只是将指针向前移动. 
+
+这种情况下, 想要看到 second 在被合并到 master 之前所做的提交就比较困难. 如果想要保留 second 的提交记录, 可以使用 `merge --no-ff` 参数来禁止 *Fast-Forward* 模式.
+
+初始状态:
+
+![初始化现场](https://i.loli.net/2019/05/08/5cd25ab10fe58.png)
+
+使用 `merge --no-ff second` 结果如下:
+
+![1557291421924.png](https://i.loli.net/2019/05/08/5cd2631c0292a.png)
+
+master 分支和 second 分支成功地合并了, 并且 second 分支的提交记录也被保留了下来.
+
