@@ -108,3 +108,19 @@ tags:
 > - 注意查找回车应当用 `\n`,替换回车应当用 `\r`
 >
 > - vim默认采用大小写敏感.在查找模式中加入 `\c` 表示大小写不敏感 ,`\C `敏感.
+
+
+
+## 问题解决
+
+### Linux Terminal 提示符显示 bash-4.2#
+
+用 root 用户登录, 发现提示符显示的不是 root@主机名+路径, 原因是*家目录*下配置文件丢失. `.bash_profile` 和 `.bashrc` 这两个文件是用户必须的配置文件.
+
+解决方案: 从主默认文件重新拷贝一份配置信息
+
+```bash
+cp /etc/skel/.bashrc /root/
+cp /etc/skel/.bash_profile /root
+```
+
