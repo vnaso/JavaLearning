@@ -236,8 +236,8 @@ public class NotInitialization {
 
 > 注意: 这里的父类加载器并不是通过*继承*来实现的, 而是采用组合实现的.
 
-1. 启动类加载器(Bootstrap ClassLoader): 负责加载存放在 `JAVA_HOME/lib` 目录中的, 或被 `-Xbootclasspath` 参数指定的路径中的, 并且能被虚拟机识别的类库(如 rt.jar, 所有的 `java.` 开头的类均被 Bootstrap ClassLoader 加载). 启动类加载器时无法被 Java 程序直接引用的. 通过 `ClassLoader.getParent()` 方法获取会得到 `null`.
-2. 扩展类加载器(Extension ClassLoader): 这个加载器由 `sun.misc.Launcher$ExtClassLoader` 实现, 它负责加载 `Java_HOME/lib/ext` 目录中的, 或者被 `java.ext.dirs` 系统变量所指定的路径中的所有类库(如 `javax.` 开头的类). 开发者可以直接使用扩展类加载器.
+1. 启动类加载器(Bootstrap ClassLoader): 负责加载存放在 `JAVA_HOME/JRE/lib` 目录中的, 或被 `-Xbootclasspath` 参数指定的路径中的, 并且能被虚拟机识别的类库(如 rt.jar, 所有的 `java.` 开头的类均被 Bootstrap ClassLoader 加载). 启动类加载器时无法被 Java 程序直接引用的. 通过 `ClassLoader.getParent()` 方法获取会得到 `null`.
+2. 扩展类加载器(Extension ClassLoader): 这个加载器由 `sun.misc.Launcher$ExtClassLoader` 实现, 它负责加载 `Java_HOME/JRE/lib/ext` 目录中的, 或者被 `java.ext.dirs` 系统变量所指定的路径中的所有类库(如 `javax.` 开头的类). 开发者可以直接使用扩展类加载器.
 3. 应用程序类加载器(Application ClassLoader): 该类加载器由 `sun.misc.Launcher$AppClassLoader` 来实现, 它负责加载用户类路径(classpath)所指定的类. 开发者可以直接使用该类加载器, 如果应用程序中没有自定义过自己的类加载器, 一般情况下这个就是程序中默认的类加载器.
 
 应用程序都是由这三种类加载器相互配合进行加载的, 如果有必要, 还可以加入自定义的类加载器. 因为 JVM 自带的 ClassLoader 只会从本地文件系统中加载标准的 Java Class 文件, 因此如果编写了自定义的 ClassLoader, 可以实现以下几点: 
@@ -245,6 +245,8 @@ public class NotInitialization {
 1. 在执行非置信代码之前, 自动验证数字签名.
 2. 动态地创建符合用户特定需要的定制化构建类.
 3. 从特定的场所取得 Java Class, 如数据库和网络等.
+
+
 
 #### JVM 类加载机制
 
@@ -318,6 +320,8 @@ protected Class<?> loadClass(String name, boolean resolve)
 2. 当 `ExtClassLoader` 加载一个 Class 时, 它首先不会自己尝试加载这个类, 而是把类加载请求委派给 `BootstrapClassLoader` 去完成.
 3. 如果 `BootstrapClassLoader` 加载失败(例如在 `$JAVA_HOME/jre/lib` 中未查找到该 Class), 会让 `ExtClassLoader` 来尝试加载.
 4. 如果 `ExtClassLoader` 加载失败, 则会使用 `AppClassLoader` 来加载, 如果 `AppClassLoader` 也加载失败, 则会报异常 `ClassNotFoundException`.
+
+![双亲委派模型](https://i.loli.net/2019/05/13/5cd8c01c17d4063119.png)
 
 ## JVM 内存结构
 

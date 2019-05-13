@@ -23,6 +23,7 @@ tags:
 
    ```
    export JAVA_HOME=/usr/java/jdk...
+   export JRE_HOME=/usr/java/jdk.../jre
    export CLASS_PATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib
    export PATH=$PATH:$GIT_HOME/bin:$MAVEN_HOME/bin:$JAVA_HOME/bin:$JRE_HOME/bin:
    ```
