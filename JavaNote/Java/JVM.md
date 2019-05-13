@@ -308,7 +308,7 @@ protected Class<?> loadClass(String name, boolean resolve)
 两个方法的比较: 
 
 - `Class.forName(className)`: 调用的是 `Class.forName(className,true,classLoader)`, 意思是在加**载类之后必须初始化**. 也就是说, 在执行过此方法后, 目标对象的*静态代码块*已经被执行, *静态变量*也已经被初始化.
-- `ClassLoader.loadClass(className)`: 调用的是 `ClassLoader.loadClass(className,false)`, 意思是**目标对象被装载后不进行连接**, 也就意味着不会去执行该类*静态代码块*.
+- `ClassLoader.loadClass(className)`: 调用的是 `ClassLoader.loadClass(className,false)`, 意思是**目标对象被装载后不进行连接**, 也就意味着不会去执行该类*静态代码块*, *静态变量*还是默认值. 在使用 `newInstance()` 创建实例时才连接.
 
 #### 双亲委派模型
 

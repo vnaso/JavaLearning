@@ -41,7 +41,115 @@ tags:
 
 实现多态的方法:继承和接口
 
-## String StringBuffer 和 StringBuilder
+## String 及 String.intern()
+
+### 前提知识
+
+1. `new String("abc")` 的分析:
+   1. `"abc"` 会在*字符串常量池*中查找是否有 `abc  `这个字符串, 如果有, 返回其引用, 如果没有, 将 `abc` 添加到字符串常量池, 再返回其引用.
+   2. `new String("abc")` 会在堆内存中创建一个 `"abc"` 的字符串对象, 返回堆中该对象的引用. 无论常量池中是否存在 `"abc"` 字符串.
+
+2. `String.intern()` 的分析:
+   
+    ```java
+    String str = new String("abc");
+    str.intern();
+    ```
+    
+    以上面代码为例:
+    
+    - **在 JDK 6 以前**: 如果*字符串常量池*中存在 `"abc"`, 则返回其在常量池中的引用, 否则将 `"abc"` 拷贝到常量池中, 并返回常量池中的应用.
+    
+    - **从 JDK 7 开始**: 如果*字符串常量池*中存在 `"abc"`, 仍返回其在常量池中的引用, 但不存在时, 不再将其拷贝到常量池中, 而是直接在常量池中生成一个对在堆中的原字符串的引用. 此例中即 `new String("abc")` 创建的对象的引用.
+    
+3. 使用 `Final String VALUE = "abc";` 时, 代码中所有使用 `VALUE` 变量的地方在编译时都会被直接替换成 `"abc"`.
+   
+      例如:
+    ```java
+      Final String a = "1";
+        Final String b = "2";
+        String c = a + b; // 编译后变为: String c = "1" + "2";
+      ```
+      
+4. 字符串引用进行 `+` 云算时, 会创建 `StringBuilder/StringBuffer.append()`, 之后再转换成 `String`, 这种情况下会 `new` 一个 `String` 对象.
+   
+      例如:
+      
+      ```java
+      String str1 = "a";
+      String str2 = "b";
+      String str12 = str1 + str2;
+      String ab = "a" + "b";
+      str12 == ab; // false
+      ```
+
+### 案例
+
+**案例一**
+
+```java
+    public static void main(String[] args) {
+        String str1 = "string";
+        String str2 = new String("string");
+        String str3 = str2.intern();
+ 
+        System.out.println(str1==str2);// false
+        System.out.println(str1==str3);// true
+    }
+```
+
+对应 #1.
+
+**案例二**
+
+```java
+public static void main(String[] args) {
+        String baseStr = "baseStr";
+        final String baseFinalStr = "baseStr";
+ 
+        String str1 = "baseStr01";
+        String str2 = "baseStr"+"01";
+        String str3 = baseStr + "01";
+        String str4 = baseFinalStr+"01";
+        String str5 = new String("baseStr01").intern();
+ 
+        System.out.println(str1 == str2);// true
+        System.out.println(str1 == str3);// false
+        System.out.println(str1 == str4);// true 
+        System.out.println(str1 == str5);// true
+    }
+```
+
+对应 #2 #3 #4
+
+**案例三**
+
+```java
+ public static void main(String[] args) {
+ 
+        String str2 = new String("str")+new String("01");
+        str2.intern();
+        String str1 = "str01";
+        System.out.println(str2==str1);// true
+    }
+```
+
+对应 #2.
+
+**案例四**
+
+```java
+ public static void main(String[] args) {
+        String str1 = "str01";
+        String str2 = new String("str")+new String("01");
+        str2.intern();
+        System.out.println(str2 == str1);// false
+    }
+```
+
+对应 #2.
+
+## StringBuffer 和 StringBuilder
 
 ### 可变性
 
@@ -57,25 +165,25 @@ tags:
 
 #### String
 
-`String`中的对象是不可变的. 在字符串常量池中只有一个. 线程安全.
+`String `中的对象是不可变的. 在字符串常量池中只有一个. 线程安全.
 
 #### StringBuffer 和 StringBuilder
 
-`AbstractStringBuilder`是`StringBuilder`与`StringBuffer`的父类.  定义了一系列字符串的基本操作.如`expandCapacity`, `append`, `insert`, `indexOf`等公共方法.
+`AbstractStringBuilder `是 `StringBuilder` 与 `StringBuffer `的父类.  定义了一系列字符串的基本操作. 如`expandCapacity`, `append`, `insert`, `indexOf `等公共方法.
 
 ##### StringBuffer
 
-`StringBuffer`对方法加了同步锁或者对调用的方法加了同步锁. 所以是线程安全的
+`StringBuffer` 对方法加了同步锁或者对调用的方法加了同步锁. 所以是线程安全的.
 
 ##### StringBuilder
 
-`StringBuilder`没有加锁. 所以是非线程安全的
+`StringBuilder` 没有加锁. 所以是非线程安全的.
 
 ### 性能
 
-- `String`类型每次被改变的时候. 都会在字符串常量池中生成一个新的`String`对象. 然后将指针指向新的`String`对象
-- `StringBuffer`每次都会对对象本身进行操作. 不会生成新的对象并改变引用.
-- `StringBuilder`相比`StringBuilder`性能仅提升10%~15%左右.  但非线程安全.
+- `String` 类型每次被改变的时候. 都会在字符串常量池中生成一个新的 `String` 对象. 然后将指针指向新的 `String `对象
+- `StringBuffer `每次都会对对象本身进行操作. 不会生成新的对象并改变引用.
+- `StringBuilder` 相比 `StringBuilder` 性能仅提升10%~15%左右. 但非线程安全.
 
 ### 使用
 
