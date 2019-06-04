@@ -664,7 +664,7 @@ final V put(K key, int hash, V value, boolean onlyIfAbsent) {
 }
 ```
 
-初始化槽(Segment): ensureSegment
+**初始化槽(Segment): ensureSegment**
 
 ConcurrentHashMap 初始化的时候会初始化第一个槽 segment[0], 对于其他槽来说, 在插入第一个值的时候初始化.
 
@@ -702,7 +702,7 @@ private Segment<K,V> ensureSegment(int k) {
 }
 ```
 
-获取写入锁: scanAndLockForPut
+**获取写入锁: scanAndLockForPut**
 
 在某个 segment 中 put 操作时, 首先会调用 `node = tryLock() ? null : scanAndLockForPut(key, hash, value);`, 也就是说先进行一次 `tryLock()`, 快速获取该 segment 的独占锁, 如果失败, 就进入到 `scanAndLockForPut()` 来获取锁.
 
@@ -750,7 +750,7 @@ private HashEntry<K,V> scanAndLockForPut(K key, int hash, V value) {
 
 该方法有两个出口, 一个是 `tryLock()` 成功, 循环终止, 另一个是重试次数超过 `MAX_SCAN_RETRIES`, 进入 `lock()` 阻塞等待获取独占锁. 总之就是在获取该 segment 的锁后退出, 如果需要的话, 顺便实例化一下 node.
 
-扩容: rehash
+**扩容: rehash**
 
 扩容是针对 segment 数组某个位置内部的 HashEntry[] 进行扩容.
 
@@ -997,7 +997,7 @@ final V putVal(K key, V value, boolean onlyIfAbsent) {
 }
 ```
 
-初始化数组: initTable
+**初始化数组: initTable**
 
 主要就是初始化一个合适大小的数组, 然后设置 sizeCtl. 初始化方法中的并发问题是通过对 sizeCtl 进行一个 CAS 操作来控制.
 
@@ -1033,7 +1033,7 @@ private final Node<K,V>[] initTable() {
 }
 ```
 
-链表转红黑树: treeifyBin
+**链表转红黑树: treeifyBin**
 
 treeifyBin 不一定会进行红黑树转换, 也可能仅仅做数组扩容.
 
@@ -1073,7 +1073,7 @@ private final void treeifyBin(Node<K,V>[] tab, int index) {
 }
 ```
 
-扩容: tryPresize
+**扩容: tryPresize**
 
 这个方法要完全看懂需要看之后的 transfer 方法.
 
@@ -1107,7 +1107,8 @@ private final void tryPresize(int size) {
             break;
         else if (tab == table) {
             // 我没看懂 rs 的真正含义是什么，不过也关系不大
-            // 根据 length 得到一个标识 - 摘自 https://www.cnblogs.com/stateis0/p/9062088.html
+            // 根据容量 n 得到本次扩容唯一标识 - 摘自 https://www.cnblogs.com/stateis0/p/9062088.html
+            // 参考: https://segmentfault.com/a/1190000016124883
             int rs = resizeStamp(n);
 
             if (sc < 0) {
@@ -1142,13 +1143,13 @@ private final void tryPresize(int size) {
 
 这个方法的核心在于 sizeCtl 值的操作, 首先将其设置为一个负数, 然后执行 `transfer(tab, null)`, 在下一个循环将 sizeCtl 加 1, 并执行 `transfer(tab, nt)`, 之后可能是继续 sizeCtl 加 1, 并执行 `transfer(tab, nt)`.
 
-所以, 可能的操作就是执行 1 次 `transfer(tab, null)` + n 次 `transfer(tab, nt)`, 这里怎么结束循环需要看完 transfer 方法.
+所以, 可能的操作就是执行 1 次 `transfer(tab, null)` + n 次 `transfer(tab, nt)`. 本次扩容第一次执行时, nt 为 null, 单线程扩容, 后续在扩容过程中有其他线程进入扩容方法时, nt 不为 null, 多线程协助其扩容.
 
-数据迁移: transfer
+**数据迁移: transfer**
 
 将原来的 tab 数组元素迁移到新的 nextTab 数组中.
 
-虽然之前的 tryPresize 方法中多次调用 transfer 不涉及多线程, 但这个 transfer 可以在其他地方被调用, 比如 put 方法中的 helpTransfer 方法会调用 transfer 方法.
+
 
 此方法支持多线程执行, 外围调用此方法的时候, 会保证第一个发起数据迁移的线程, nextTab 参数为 null. 
 
