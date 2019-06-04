@@ -1208,9 +1208,9 @@ private final void transfer(Node<K,V>[] tab, Node<K,V>[] nextTab) {
     for (int i = 0, bound = 0;;) {
         Node<K,V> f; int fh;
  
-        // 下面这个 while 真的是不好理解
+        // 每一次自旋前的预处理，主要是定位本轮 transfer 处理的桶区间
         // advance 为 true 表示可以进行下一个位置的迁移了
-        //   简单理解结局：i 指向了 transferIndex，bound 指向了 transferIndex-stride
+        //   简单理解结局：i == transferIndex - 1, bound == transferIndex-stride
         while (advance) {
             int nextIndex, nextBound;
             if (--i >= bound || finishing)
@@ -1232,6 +1232,7 @@ private final void transfer(Node<K,V>[] tab, Node<K,V>[] nextTab) {
                 advance = false;
             }
         }
+        // 当前是处理最后一个 transfer 任务的线程, 或出现扩容冲突.
         if (i < 0 || i >= n || i + n >= nextn) {
             int sc;
             if (finishing) {
@@ -1255,6 +1256,9 @@ private final void transfer(Node<K,V>[] tab, Node<K,V>[] nextTab) {
                 // 到这里，说明 (sc - 2) == resizeStamp(n) << RESIZE_STAMP_SHIFT，
                 // 也就是说，所有的迁移任务都做完了，也就会进入到上面的 if(finishing){} 分支了
                 finishing = advance = true;
+                // 最后完成数据迁移的线程重新检查一次旧 table 中的所有桶, 看是否都被正确迁移到新 table了
+                // 正常情况下, 重新检查时, 旧 table 所有桶都应该是 ForwardingNode;
+                // 特殊情况下, 比如扩容冲突(多个线程申请到同一个 transfer 任务), 此时当前线程领取的任务会作废, 那么最后检查时还要处理因为作废而没有被迁移的桶, 把他们正确迁移到新 table 中.
                 i = n; // recheck before commit
             }
         }
@@ -1271,12 +1275,14 @@ private final void transfer(Node<K,V>[] tab, Node<K,V>[] nextTab) {
                     Node<K,V> ln, hn;
                     // 头结点的 hash 大于 0，说明是链表的 Node 节点
                     if (fh >= 0) {
-                        // 下面这一块和 Java7 中的 ConcurrentHashMap 迁移是差不多的，
-                        // 需要将链表一分为二，
+                         /**
+                         * 下面的过程会将旧桶中的链表分成两部分：ln链和hn链
+                         * ln链会插入到新table的槽i中，hn链会插入到新table的槽i+n中
+                         */
                         //   找到原链表中的 lastRun，然后 lastRun 及其之后的节点是一起进行迁移的
-                        //   lastRun 之前的节点需要进行克隆，然后分到两个链表中
-                        int runBit = fh & n;
-                        Node<K,V> lastRun = f;
+                        //   lastRun 之前的节点需要进行克隆，然后分到两个链表中. 类似于 Java7 中 ConcurrentHashMap 的迁移.
+                        int runBit = fh & n; // 由于 n 是 2 的幂次, 所以 runBit = 要么是 0(原位置), 要么高位是 1(原位置 + 原容量).
+                        Node<K,V> lastRun = f; // lastRun 指向最后一个相邻 runBit 不同的节点.
                         for (Node<K,V> p = f.next; p != null; p = p.next) {
                             int b = p.hash & n;
                             if (b != runBit) {
