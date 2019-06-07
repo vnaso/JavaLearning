@@ -30,6 +30,24 @@ tags:
 
 4. 检查是否安装成功: `java -version`
 
+### OpenJDK
+
+安装 OpenJDK 命令
+
+```bash
+yum -y install java-1.8.0-openjdk java-1.8.0-openjdk-devel
+
+cat > /etc/profile.d/java8.sh <<EOF 
+export JAVA_HOME=$(dirname $(dirname $(readlink $(readlink $(which javac)))))
+export PATH=\$PATH:\$JAVA_HOME/bin
+export CLASSPATH=.:\$JAVA_HOME/jre/lib:\$JAVA_HOME/lib:\$JAVA_HOME/lib/tools.jar
+EOF
+
+source /etc/profile.d/java8.sh
+```
+
+
+
 ## Mysql
 
 #### 安装
@@ -40,8 +58,8 @@ tags:
 
 #### 配置
 
-- 启动 mysql: `service mysqld start`
-- 关闭 mysql: `service mysqld stop`
+- 启动 mysql: `service mysqld start`/`systemctl start mysqld`
+- 关闭 mysql: `service mysqld stop`/`systemctl stop mysqld`
 
 1. 查看 mysql 提供的初始 root 密码: `cat /var/log/mysqld.log | grep password`
 
@@ -306,13 +324,16 @@ tags:
       		zsh-syntax-highlighting
       		...# 插件名, 需要先下载并安装插件
       )
-      ```
-
-   4. 为 autosuggestions 的自动提示绑定快捷采纳键, 默认为 <kbd>→</kbd>. 替换为 <kbd>Ctrl + Space</kbd>.
-
-      `bindkey '^ ' autosuggest-accept`.
-
+      bindkey '^ ' autosuggest-accept
+   ```
+   
+4. 为 autosuggestions 的自动提示绑定快捷采纳键, 默认为 <kbd>→</kbd>. 替换为 <kbd>Ctrl + Space</kbd>. 
+   
+   `bindkey '^ ' autosuggest-accept`.
+   
       可以通过 `cat > /dev/null` 来查看组合键的转换序列.
+      
+      在命令行中执行命令, 只在这次连接中生效. 要永久生效, 需要在 `.zshrc` 配置文件中添加以上命令.
 
 ## swap交换缓存
 
