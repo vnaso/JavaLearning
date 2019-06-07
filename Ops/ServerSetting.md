@@ -96,11 +96,15 @@ tags:
 
 2. 使用 `tar -zxvf <文件名>` 解压缩.
 
-3. 安装 `git` 前置依赖: `yum -y install zlib-devel openssl-devel cpio expat-devel gettext-devel curl-devel perl-ExtUtils-CBuilder perl-ExtUtils-MakeMaker`
+3. 安装 `git` 前置依赖: 
+
+   ```bash
+   yum -y install zlib-devel openssl-devel cpio expat-devel gettext-devel curl-devel perl-ExtUtils-CBuilder perl-ExtUtils-MakeMaker
+   ```
 
 4. 进入 `git `安装目录下, 进行安装: `./configure --prefix=/usr/local/git`-> `make && make install`
 
-   如果报错 `no such file or directory`. 使用: `yum install autoconf`然后在目录中键入 `autoconf`, 再次进行安装即可.
+   如果报错 `no such file or directory: ./configure`. 使用: `yum install autoconf`然后在目录中键入 `autoconf`, 再次进行安装即可.
 
 5. 添加环境变量. `vim /etc/profile`, 使环境变量生效`source /etc/profile`
 
@@ -255,7 +259,60 @@ tags:
     >
     > 重启防火墙:`firewall-cmd --reload`
 
-11. 测试.浏览器打开`ftp://服务器地址`登录.如果只能下载不能上传,请查阅`开启关闭SELinux`相关信息
+11. 测试.浏览器打开 `ftp://服务器地址` 登录.如果只能下载不能上传,请查阅**开启关闭SELinux**相关信息
+
+## Redis
+
+1. [官网](<https://redis.io/>)下载压缩包, 并解压.
+2. 进入解压后的 redis 根目录.
+3. 安装 redis:
+   1. 编译: `make`
+   2. 指定安装目录: `make PREFIX=/usr/local/redis install`
+4. 测试:
+   1. 进入 `/usr/local/redis/bin` 运行 `./redis-server`
+   2. 另起一个窗口, 进入 `/usr/local/redis/bin` 运行 `./redis-cli`
+
+## zsh
+
+1. 使用 yum 安装: `sudo yum update && sudo yum -y install zsh`
+2. 检测是否安装成功: `zsh --version`
+3. 将 shell 切换至 zsh: `chsh -s $(which zsh)`
+4. 重新登录, 检查 shell 是否切换: `echo $SHELL`
+
+### 配置
+
+1. 从[官网](<https://ohmyz.sh/>)下载插件
+
+   ```bash
+   git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+   git clone git://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+   ```
+
+   插件需要放在 `${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/` 目录下, 否则每次重启都需要重新安装插件.
+
+2. 安装插件
+
+   1. 进入到下载的插件的根目录下, 分别 `source <插件名.zsh>`.
+
+   2. 进入 zsh 安装目录(默认为 `/root/` 下)
+
+   3. `vim .zshrc` 编辑 zsh 配置文件:
+
+      ```.zshrc
+      ZSH_THEME="agnoster"
+      plugins=(
+      		git
+      		zsh-autosuggestions
+      		zsh-syntax-highlighting
+      		...# 插件名, 需要先下载并安装插件
+      )
+      ```
+
+   4. 为 autosuggestions 的自动提示绑定快捷采纳键, 默认为 <kbd>→</kbd>. 替换为 <kbd>Ctrl + Space</kbd>.
+
+      `bindkey '^ ' autosuggest-accept`.
+
+      可以通过 `cat > /dev/null` 来查看组合键的转换序列.
 
 ## swap交换缓存
 
