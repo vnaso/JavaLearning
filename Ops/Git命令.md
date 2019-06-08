@@ -131,7 +131,15 @@ git reset <commit-id>
 git show <commmit-id>
 ```
 
+## 修改
 
+### 修改某次 commit 的注释
+
+执行该命令后, 会出现交互界面让你修改最近一次尚未 push 的 commit 的注释.
+
+```bash
+git commit --amend
+```
 
 ## 知识点
 
