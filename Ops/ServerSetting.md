@@ -46,8 +46,6 @@ EOF
 source /etc/profile.d/java8.sh
 ```
 
-
-
 ## Mysql
 
 #### 安装
@@ -325,6 +323,9 @@ source /etc/profile.d/java8.sh
       		...# 插件名, 需要先下载并安装插件
       )
       bindkey '^ ' autosuggest-accept
+      ```
+   ```
+   
    ```
    
 4. 为 autosuggestions 的自动提示绑定快捷采纳键, 默认为 <kbd>→</kbd>. 替换为 <kbd>Ctrl + Space</kbd>. 
@@ -332,7 +333,7 @@ source /etc/profile.d/java8.sh
    `bindkey '^ ' autosuggest-accept`.
    
       可以通过 `cat > /dev/null` 来查看组合键的转换序列.
-      
+   
       在命令行中执行命令, 只在这次连接中生效. 要永久生效, 需要在 `.zshrc` 配置文件中添加以上命令.
 
 ## swap交换缓存
