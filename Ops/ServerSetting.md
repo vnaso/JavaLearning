@@ -322,11 +322,11 @@ source /etc/profile.d/java8.sh
       		zsh-syntax-highlighting
       		...# 插件名, 需要先下载并安装插件
       )
+      # 采纳提示组合键
       bindkey '^ ' autosuggest-accept
+      # autojump 支持
+      [[ -s $(brew --prefix)/etc/profile.d/autojump.sh ]] && . $(brew --prefix)/etc/profile.d/autojump.sh
       ```
-   ```
-   
-   ```
    
 4. 为 autosuggestions 的自动提示绑定快捷采纳键, 默认为 <kbd>→</kbd>. 替换为 <kbd>Ctrl + Space</kbd>. 
    
@@ -335,6 +335,12 @@ source /etc/profile.d/java8.sh
       可以通过 `cat > /dev/null` 来查看组合键的转换序列.
    
       在命令行中执行命令, 只在这次连接中生效. 要永久生效, 需要在 `.zshrc` 配置文件中添加以上命令.
+   
+4. 安装 autojump:
+
+   下载完 autojump 后, 进入根目录, 执行 `install.py`.
+
+   然后根据提示, 将 `[[ -s /root/.autojump/etc/profile.d/autojump.sh ]] && source /root/.autojump/etc/profile.d/autojump.sh` 添加到 `.zshrc`中.
 
 ## swap交换缓存
 
