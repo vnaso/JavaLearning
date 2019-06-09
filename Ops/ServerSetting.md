@@ -50,7 +50,7 @@ source /etc/profile.d/java8.sh
 
 #### 安装
 
-1. 到[官网Yum仓库](https://dev.mysql.com/downloads/repo/yum/)下载 `rpm` 包.
+1. 到[官网Yum	仓库](https://dev.mysql.com/downloads/repo/yum/)下载 `rpm` 包.
 2. `rpm -ivh <文件名> `或者 `yum localinstall <文件名> `安装刚才下载好的包
 3. 此时便可以通过 `yum `安装最新的 `mysql`. 使用指令 `yum install mysql-community-server `安装
 
@@ -358,6 +358,83 @@ source /etc/profile.d/java8.sh
 
 1. 打开文件`nano /etc/fstab`,在文件末尾添加`/swapfile   swap    swap    sw  0   0`
 2. `^X`表示`Ctrl + X`,按下选择`yes`保存退出.
+
+## Docker
+
+### 安装
+
+1. 安装相关依赖.
+
+   ```bash
+   sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+   ```
+
+2. 添加软件源信息
+
+   ```bash
+   sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+   ```
+
+3. 更新并安装 Docker-CE
+
+   ```bash
+   sudo yum -y install docker-ce
+   ```
+
+4. 开启 Docker.
+
+   ```bash
+   sudo service docker start
+   ```
+
+5. 检测是否安装成功: `docker version`.
+
+### 配置
+
+#### 使用阿里云镜像加速
+
+1. 登录[阿里云控制台](<https://homenew.console.aliyun.com/>).
+2. 选择**容器镜像服务**.
+3. 开启该服务后, 镜像中心 -> 镜像加速器.
+4. 参照下方操作文档添加镜像加速.
+
+### 安装 MySQL
+
+1. 拉取镜像.
+
+   ```bash
+   docker pull mysql
+   ```
+
+2. 运行 Mysql.
+
+   ```bash
+   docker run --name mysqltest -e MYSQL_ROOT_PASSWORD=123456 -d -p 3306:3306 --restart=always -v ~/app/mysql-docker/:/data/mysql mysql
+   ```
+
+   - `--name mysqltest`: 将容器命名为 mysql.
+
+   - `-e`: MYSQL_ROOT_PASSWORD=123456: 设置 root 账户密码.
+
+   - `-d`: 容器在后台运行, 并返回容器 ID.
+
+   - `-p`: 端口映射, `主机端口:容器端口`.
+
+   - `--restart=always`: 当 docker 重启时, 该容器自动重启.
+
+   - `-v ~/app/mysql-docker/:/data/mysql`: 挂载数据卷, `主机绝对路径:容器路径`.
+
+     建议挂载 空文件夹:空文件夹, 否则可能出现各种情况.
+
+     参考:<https://segmentfault.com/a/1190000015684472>, <https://www.jianshu.com/p/e605de64e9f9>
+
+3. 进入 MySQL 容器.
+
+   ```bash
+   docker exec -ti mysqltest bash
+   ```
+
+4. 在挂载的目录下创建 `custom.cnf`, 添加相关 mysql 配置后, 在 MySQL 容器中对应的目录下将 `custom.cnf` 拷贝到 `/etc/mysql/conf.d` 下.
 
 ## 环境变量配置
 
