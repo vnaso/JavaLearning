@@ -30,6 +30,14 @@ tags:
 
 4. 检查是否安装成功: `java -version`
 
+#### 运行打包好的 jar
+
+运行 java 程序, 进程不挂起:
+
+```shell
+nohup -jar {path} &
+```
+
 ### OpenJDK
 
 安装 OpenJDK 命令
