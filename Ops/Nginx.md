@@ -8,9 +8,7 @@ tags:
 - Nginx
 ---
 
-# Nginx使用
-
-## Nginx配置 
+## Nginx配置
 
 > 在`···/nginx/conf`目录下的`nginx.conf`
 
@@ -286,8 +284,27 @@ location /bbb/{
 > **注意**
 >
 > - `alias`只能作用在`location`中,而`root`可以存在`server`,`http`,`location`.
->
-> - `alias`后面必须要用`/`结束.
+>- `alias`后面必须要用`/`结束.
+
+## Nginx 配置静态资源目录
+
+```nginx
+server {
+        listen 8082;
+        server_name localhost;
+        location / {
+        		# 设置资源根目录
+                root /root/app/project/upload/files;
+                # 设置默认欢迎页
+        		index index.html;
+        		# 目录结构
+                autoindex on;
+                autoindex_localtime on;
+        }
+}
+```
+
+如果访问资源显示 403, 则在 `nginx.conf` 文件中找到被注释的 `#user nobody`, 添加一行 `user root` 即可.
 
 ## Nginx实现解决前后端分离的跨域问题
 
@@ -363,4 +380,6 @@ location /bbb/{
 - `proxy_set_header`:为转发的请求添加`RequestHeader`
 
 [相关知识CORS](../Web/CORS跨域资源共享)
+
+
 

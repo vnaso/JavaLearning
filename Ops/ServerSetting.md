@@ -35,7 +35,7 @@ tags:
 运行 java 程序, 进程不挂起:
 
 ```shell
-nohup -jar {path} &
+nohup java -jar {path} &
 ```
 
 ### OpenJDK
