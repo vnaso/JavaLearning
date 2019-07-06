@@ -376,6 +376,7 @@ server {
 - `Access-Control-Allow-Origin`:服务器默认是不允许跨域的,这里可以添加接受跨域的`请求源(origin)`.
 - `Access-Control-Allow-Methods`:设置允许接收哪些方法的跨域请求
 - `Access-Control-Allow-Headers`:不添加此属性会报错:`Request header field Content-Type is not allowed by Access-Control-Allow-Headers in preflight response.`原因是当前的`Content-Type`不被支持.详情看下方的`预检请求`.
+- `Access-Control-Allow-Credentials`:表示是否允许发送 Cookie, 默认情况下, Cookis 不包括在 CORS 请求之中. 不设置为 true, 客户端不会收到服务器发送的 Cookie, 可能会客户端获取不到 session.
 - `proxy_pass`:表示将匹配的请求转发到该`url`下
 - `proxy_set_header`:为转发的请求添加`RequestHeader`
 
