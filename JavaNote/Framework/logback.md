@@ -104,14 +104,22 @@ tags:
 > 示例:
 >
 > ```xml
->         <filter class="ch.qos.logback.classic.filter.LevelFilter">
->             <level>ERROR</level>
->             <onMatch>ACCEPT</onMatch>
->             <onMismatch>DENY</onMismatch>
->         </filter>
+>      <filter class="ch.qos.logback.classic.filter.LevelFilter">
+>          <level>ERROR</level>
+>          <onMatch>ACCEPT</onMatch>
+>          <onMismatch>DENY</onMismatch>
+>      </filter>
 > ```
 >
 > 以上配置表示只保留`Error`等级的日志信息
+>
+> `ch.qos.logback.classic.filter.ThresholdFilter`: 临界值过滤器, 过滤掉低于指定临界值的日志. 当日志级别高于或等于临界值时, 过滤器返回 NEUTRAL, 否则拒绝.
+>
+> ```xml
+>      <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+>          <level>INFO</level>
+>      </filter>
+> ```
 
 ### configuration - logger
 
@@ -165,10 +173,37 @@ tags:
 >
 > 以上对应继承关系:祖>爷>父>子
 
-### level继承关系
+### level 继承关系
 
 ![UTOOLS1551424430122.png](https://i.loli.net/2019/03/01/5c78dbb03a3dc.png)
 
-### appender继承关系
+### appender 继承关系
 
 ![UTOOLS1551424496592.png](https://i.loli.net/2019/03/01/5c78dbf1107a0.png)
+
+## 相关知识
+
+如果程序运行在 Tomcat 服务器上, 可以利用 `${catalina.base}` 来设置 log 文件持久化的根目录, 如: `<property name="log.filePath" value="${catalina.base}/..."/>`.
+
+> Tomcat 有 `${catalina.base}` 和 `${catalina.home}` 两个变量, 容易混淆, 这里说一下区别. 
+>
+> - `${catalina.home}`
+>
+>   home 一般指的是 Tomcat 的**安装目录**, 即存放 bin 和 lib 这些包含创建 Tomcat 实例所必要的文件的目录.
+>
+> - `${catalina.base}`
+>
+>   base 一般指的是 Tomcat 的**工作目录**, 即存放 `conf`, `logs`, `temp`, `webapps`, `work` 这些保存和运行程序有关的文件的目录.
+>
+> 一般来说, 在普通*单实例单应用*的情况下, 这两者是没有区别的. 但如果启动多个实例时, home 相同, 但是 base 是根据实例而不同的. 因此, 可以通过设置多个 base 目录, 包含必要的那些文件夹, 修改监听的端口, 就可以启动多个 Tomcat. 详见: https://www.cnblogs.com/mafly/p/tomcat.html.
+>
+> Tomcat 安装目录下有:
+>
+> - `bin`: 存放一些脚本文件, 比如: `startup.sh` 和 `shutdown.sh`.
+>
+> - `conf`: 存放配置文件, 比如: `server.xml` 和 `web.xml`.
+> - `lib`: 存放 Tomcat 依赖的包.
+> - `logs`: 存放运行时产生的日志文件.
+> - `temp`: 存放运行时产生的临时文件.
+> - `webapps`: 部署 Web 应用程序的默认目录, 也就是 war 包所在默认目录.
+> - `work`: 存放由 JSP 文件生成的 servlet.
