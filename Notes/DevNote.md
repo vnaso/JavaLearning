@@ -1,10 +1,10 @@
 ---
-title: 工具踩坑记录
+title: Dev Note
 date: 2019/06/08 23:33
 categories:
-- Solutions
+- Note
 tags:
-- Tools
+- Dev
 ---
 
 ## DB
@@ -43,16 +43,33 @@ jdbc:mysql://{host}:{port}/{schema}?useUnicode=true&characterEncoding=utf8&useSS
 
 `@ApiParam` 用于描述实体类, 如 pojo 等. 否则在生成的接口文档中会把本来只是作为参数的实体类的变量名也作为一个接口的参数.
 
-## Cmder
+### 使用 Nginx 反向代理后获取不到真实客户端 IP
 
-### Cmder 进入 Windows Linux Subsystem 后, 进入 vim 界面方向键无法使用.
+#### 起因
 
-在 Startup -> Tasks -> bash::ubuntu -> 启动参数中添加 `%windir%\system32\bash.exe ~ -cur_console:p5`.
+由于配置了 Nginx 反向代理, 使用 proxy_pass 代理了客户端请求, 导致通过 `HttpServletRequest.getRemoteAddr()` 获取到的 IP 地址为 Nginx 服务器所在的地址.
 
-## Win10
+#### 解决方案
 
-### 电脑开机后, 亮度自动变为 50.
+Nginx 添加配置:
 
-(任务管理器) -> 服务 -> 显示增强服务(DisplayEnhancementService), 把该服务禁用即可.
+```nginx
+location / {
+    proxy_set_header Host				$host;
+    proxy_set_header X-Real-IP			$remote_addr;
+    proxy_set_header X-Forwarded-For	$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto	$scheme;
+    proxy_redirect                      off;
+}
+```
 
+SpringBoot 添加配置
+
+```application.xml
+server:
+  use-forward-headers: true
+  tomcat:
+    remote-ip-header: X-Real-IP
+    protocol-header: X-Forwarded-Proto
+```
 

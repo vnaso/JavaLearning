@@ -15,7 +15,7 @@ tags:
 >
 > 注意: 多线程的并发读写 Servlet 类属性会导致数据不同步. 但是如果只是并发地读取属性而不写入, 则不存在数据不同步的问题. 因此 Servlet 里的只读属性最好定义为 final 类型
 
-## Servlet 和 CGI 区别
+### Servlet 和 CGI 区别
 
 #### CGI 的不足:
 
@@ -32,7 +32,7 @@ tags:
 
 一个基于 Java Web 的应用通常包含一个或多个 Servlet 类. Servlet 不能够自行创建并执行, 它是在 Servlet 容器中运行的, 容器将用户的请求传递给 Servlet 程序并将 Servlet 的响应回传给用户.
 
-## Servlet 接口中的方法及生命周期
+### Servlet 接口中的方法及生命周期
 
 **Servlet 接口中定义了 5 个方法, 其中前三个方法与 Servlet 生命周期相关:**
 
@@ -47,7 +47,7 @@ tags:
 
 Web 容器加载 Servlet 并将其实例化后, Servlet 生命周期开始. 容器运行其 `init()` 方法进行 Servlet 的初始化. 请求到达时调用 Servlet 的 `service()` 方法, `service()` 方法根据需要调用与请求对应的 `doGet()` 或 `doPost()` 方法. 当服务器关闭或项目被卸载时, 服务器会将 Servlet 实例销毁. 此时会调用 Servlet 的 `destroy()` 方法. **init 和 destroy 方法只会执行一次, service 方法会在客户端每次请求 Servlet 时执行**. Servlet 中有时会用到一些需要初始化与销毁的资源. 因此可以把初始化资源的代码放入 inti 方法中, 销毁资源的代码放入 destroy 中.
 
-## 转发(Forward)和重定向的区别(Redirect)的区别
+### 转发(Forward)和重定向的区别(Redirect)的区别
 
 **转发是服务器行为, 重定向是客户端行为**
 
@@ -82,9 +82,9 @@ Web 容器加载 Servlet 并将其实例化后, Servlet 生命周期开始. 容�
    - forward: 高
    - redirect: 低
 
-## 实现会话跟踪
+### 实现会话跟踪
 
-### 使用Cookie
+#### 使用Cookie
 
 向客户端发送 Cookie
 
@@ -115,7 +115,7 @@ if(cookies !=null){
 
 **缺点**: 大小受限制, 用户可以禁用 Cookie 功能. 保存在本地, 有安全风险
 
-### URL 重写
+#### URL 重写
 
 在 URL 中添加用户会话的信息作为请求的参数, 或者将唯一的会话 ID 添加到 URL 结尾以标识一个会话.
 
@@ -123,7 +123,7 @@ if(cookies !=null){
 
 **缺点**: 必须对网站的 URL 进行编码, 所有页面必须动态生成. 不能用预先记录下来的 URL 进行访问.
 
-### 隐藏的表单
+#### 隐藏的表单
 
 ```
 <input type = "hidden" name = "session" value = "..." />
@@ -133,7 +133,7 @@ if(cookies !=null){
 
 **缺点**: 所有页面必须是表单提交之后的结果
 
-### HttpSession
+#### HttpSession
 
 最强大功能最多的会话跟踪技术. 当一个用户访问某个网站时会自动创建 HttpSession 分配一个 JSESSIONID. 每个用户可以访问他自己的 HttpSession . 可以通过 `HttpServletRequest` 对象的 `getSession()` 方法获得 HttpSession , 通过 HttpSession 对象的 `getAttribute()` 方法, 同时传入 `key` 就可以获取保存在 HttpSession 中的对象.
 
@@ -155,7 +155,7 @@ HttpSession 保存在服务器的内存中, 因此不要将过大的对象存放
 
 **Cookie 和 Session** 的主要区别在于: Cookie 保存在客户端, Session 保存在服务端
 
-## Get 和 Post 请求区别
+### Get 和 Post 请求区别
 
 |                             Get                              |                             Post                             |
 | :----------------------------------------------------------: | :----------------------------------------------------------: |
@@ -164,6 +164,26 @@ HttpSession 保存在服务器的内存中, 因此不要将过大的对象存放
 | 传输的数据收到浏览器对 URL 长度的限制(最大长度为 2048 字符)  | 可以通过 request body 技术传输大量数据, 上传文件通常使用 post 方式 |
 |                     参数会显示在地址栏上                     |                     数据不会显示在地址栏                     |
 | 使用 MIME类型 application/x-www-form-urlencode 的 URL 编码文本的格式传递参数 |            支持更多的编码类型且不对数据类型做限制            |
+
+### Servlet url-pattern
+
+Servlet 对 url 进行匹配的规则分为**四类**, 优先级从高到低分别为: 
+
+1. 精确匹配: `/user/login | /index.html`.
+
+   请求的 url 与 url-pattern 完全一致, 则匹配成功, 否则进入下一级匹配.
+
+2. 路径匹配: `/* | /user/*`.
+
+   请求的 url 满足 url-pattern 的格式, 如 `/user/login` 会被匹配到 `/user/*` 的 Servlet, 匹配失败进入下一级匹配.
+
+3. 扩展名匹配: `*.jpg | *.js`.
+
+   请求的 url 满足 url-pattern 的格式, 如 `cat.jpg` 会被匹配到 `*.jpg` 的 Servlet, 匹配失败进入缺省匹配.
+
+4. 缺省匹配: `/`.
+
+   以上几个 url-pattern 都匹配失败就会进入缺省匹配的 Servlet, 缺省匹配的默认 Servlet 是 Tomcat 自身提供的 `default` Servlet.
 
 ## 参考资料
 
