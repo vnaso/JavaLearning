@@ -47,8 +47,9 @@ tags:
 
 1. `new String("abc")` 的分析:
    1. `"abc"` 会在*字符串常量池*中查找是否有 `abc  `这个字符串, 如果有, 返回其引用, 如果没有, 将 `abc` 添加到字符串常量池, 再返回其引用.
-   2. `new String("abc")` 会在堆内存中创建一个 `"abc"` 的字符串对象, 返回堆中该对象的引用. 无论常量池中是否存在 `"abc"` 字符串.
-
+   2. `new String` 会在堆内存中创建一个 `"abc"` 的字符串对象, 返回堆中该对象的引用. 无论常量池中是否存在 `"abc"` 字符串.
+3. `new String("abc")` 会创建两个对象, 一个是在常量池中通过 `"abc"` 创建的, 一个是在堆中创建的 String 对象.
+   
 2. `String.intern()` 的分析:
    
     ```java
@@ -95,6 +96,7 @@ tags:
  
         System.out.println(str1==str2);// false
         System.out.println(str1==str3);// true
+        System.out.println(str2==str3);// false
     }
 ```
 
@@ -224,7 +226,7 @@ public static void main(String[] args) {
 
 `==`可以用于基本类型进行比较.  也可以用于对象进行比较.  当用于对象与对象之间比较时.  比较的不是对象代表的值.  而是检查两个对象**是否是同一对象**.这个比较过程中没有自动装箱发生.进行对象值比较不应该使用`==`，而应该使用对象对应的`equals`方法.
 
-```
+```java
 public class AutoboxingTest {
 
     public static void main(String args[]) {
@@ -264,7 +266,7 @@ one == anotherOne : false
 
 ##### 缓存的对象
 
-在Java中. 会对-128到127的Integer对象进行缓存. 当创建新的Integer对象时. 如果符合这个这个范围. 并且已有存在的相同值的对象. 则返回这个对象 否则创建新的Integer对象.
+在Java中, 基本数据类型的包装类型都会有缓存, 如 Integer 会对 value 在 -128 到 127 的对象进行缓存. 当创建新的Integer对象时(`Integer.valueOf()`) 如果符合这个这个范围. 并且已有存在的相同值的对象. 则返回这个对象 否则创建新的Integer对象. 因为自动拆箱, 自动装箱实质就是调用 `Integer.valueOf()` 和 `Integer.intValue()`, 所以会使用到缓存.
 
 ## 静态方法内不能调用非静态成员
 

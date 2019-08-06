@@ -37,11 +37,23 @@ jdbc:mysql://{host}:{port}/{schema}?useUnicode=true&characterEncoding=utf8&useSS
 
 添加注解的方式无法生效, 需要在 `application.yml` 中通过 `spring.jackson.default-property-inclusion: non_null` 来指定.
 
-### Swagger @ApiImplicParam 和 @ApiParam 的使用
+### Swagger @ApiImplicitParam 和 @ApiParam 的使用
 
-`@ApiImplicParam` 用于描述基本数据类型.
+`@ApiImplicParam` 用于描述接口方法参数对象的属性.
 
-`@ApiParam` 用于描述实体类, 如 pojo 等. 否则在生成的接口文档中会把本来只是作为参数的实体类的变量名也作为一个接口的参数.
+`@ApiParam` 用于描述接口方法所需的参数对象.
+
+例:
+
+```java
+@ApiImplicitParams({
+    @ApiImplicitParam(name = "people 的 name", value = "name"),
+    @ApiImplicitParam(name = "people 的 age", value = "age)
+    })
+public void updatePeople(@ApiParam People p, @ApiParam String type){}
+```
+
+
 
 ### 使用 Nginx 反向代理后获取不到真实客户端 IP
 

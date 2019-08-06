@@ -682,6 +682,7 @@ G1 内存分布
 ## JVM 常用参数
 
 - `-XX:PrintFlagsFinal`: 显示所有可设置的参数及它们的值.
+
 - `-XX:PrintFlagsInitial`: 显示在处理参数之前所有可设置的参数及它们的值, 然后直接退出程序.
 
 - `-Xms`=`-XX:InitialHeapSize`: 初始堆大小, 默认物理内存的 1/64. 空余堆内存小于 40% 时, JVM 就会增大堆直到 `-Xmx` 的最大限制.
@@ -709,6 +710,8 @@ G1 内存分布
 - `-XX:MaxTenuringThreshold`: 垃圾最大年龄. 最大为 15.
 
   如果设置为 0 的话, 则*新生代*对象不经过 *Survivor 区*, 直接进入*老年代*. 该参数只有在串行 GC 时才有效.
+  
+- `-XX:+UseStringDeduplication`: 在使用 G1 GC 时进行字符串排重, 将相同数据的字符串指向同一份数据.
 
 ## **参考**
 
