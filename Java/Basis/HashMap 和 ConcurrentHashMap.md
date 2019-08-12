@@ -1033,7 +1033,7 @@ private final Node<K,V>[] initTable() {
 }
 ```
 
-**链表转红黑树: treeifyBin**
+##### 链表转红黑树: treeifyBin
 
 treeifyBin 不一定会进行红黑树转换, 也可能仅仅做数组扩容.
 
@@ -1073,7 +1073,7 @@ private final void treeifyBin(Node<K,V>[] tab, int index) {
 }
 ```
 
-**扩容: tryPresize**
+##### 扩容: tryPresize
 
 这个方法要完全看懂需要看之后的 transfer 方法.
 
