@@ -2,10 +2,11 @@
 title: Nginx学习笔记
 date: 2019/04/15 14:34
 categories:
-- 数据存储
+- 中间件
 - Redis
 tags:
 - Redis
+- 消息中间件
 ---
 
 ## Redis
