@@ -444,6 +444,33 @@ source /etc/profile.d/java8.sh
 
 4. 在挂载的目录下创建 `custom.cnf`, 添加相关 mysql 配置后, 在 MySQL 容器中对应的目录下将 `custom.cnf` 拷贝到 `/etc/mysql/conf.d` 下.
 
+## RabbitMQ
+
+### 安装
+
+#### 通过 Docker 安装
+
+1. 拉取镜像.
+
+   ```shell
+   docker pull rabbitmq:3.3.7-management
+   ```
+
+   注意: 带有 management 的版本才有后台管理.
+
+2. 后台运行容器.
+
+   ```shell
+   docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 -v ~/app/rabbitmq/data:/var/lib/rabbitmq --hostname rabbitNo1 -e RABBITMQ_DEFAULT_VHOST=my_vhost -e RABBITMQ_DEFAULT_USER=admin -e RABBITMQ_DEFAULT_PASS=admin rabbitmq:3.7.7-management
+   ```
+
+   - 5672 为运行 rabbitmq 运行端口, 15672 为后台管理界面端口.
+   - `-e RABBITMQ_DEFAULT_VHOST`: 改变默认的 vhost.
+   - `-e RABBITMQ_DEFAULT_USER`: 设置登录名.
+   - `-e RABBITMQ_DEFAULT_PASS=admin`: 设置登录密码.
+
+3. 访问 `{IP}:15672` 验证是否启动成功.
+
 ## 环境变量配置
 
 在腾讯云服务器中的配置
