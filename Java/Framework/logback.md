@@ -207,3 +207,174 @@ tags:
 > - `temp`: 存放运行时产生的临时文件.
 > - `webapps`: 部署 Web 应用程序的默认目录, 也就是 war 包所在默认目录.
 > - `work`: 存放由 JSP 文件生成的 servlet.
+
+## 整合 Spring Boot
+
+### 引入依赖
+
+在 pom.xml 中添加:
+
+```xml
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-logging</artifactId>
+        </dependency>
+```
+
+在 Spring Boot 中有一些 starter 已经依赖了 logging, 则不需显式添加依赖. 如 `spring-boot-starter-web`, `spring-boot-starter-aop`.
+
+### 配置 logback-spring.xml
+
+> 文件名末尾添加 `-spring` 可以使用 `<springProfile>` 标签来配置不同环境日志策略.
+
+**示例配置**:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 每 60 seconds 进行一次 scan, 不开启 logback 的内部 debug -->
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <!-- 引入 Spring Boot 默认的一些设置 -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <!-- 引入 Spring Boot 的参数 -->
+    <!-- FIXME 日志目录 -->
+    <springProperty scope="context" name="logback.path" source="logging.path" defaultValue="logs"/>
+    <!-- 定义参数常量 -->
+    <!-- 日志最大保存天数 -->
+    <property name="log.maxHistory" value="30"/>
+    <property name="log.filePath" value="${logback.path}"/>
+    <!-- 日志格式 -->
+    <property name="log.pattern" value="===[%d{HH:mm:ss.SSS}][%p][%c{40}][%t]=== - %m%n"/>
+    <!-- 单日志最大大小 -->
+    <property name="log.maxFileSize" value="10MB" />
+    <!-- 异步存储文件阻塞队列最大处理 event 数量 -->
+    <property name="log.queueSize" value="512" />
+    <!-- 控制台输出配置 DEBUG -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+    </appender>
+    <!-- 项目输出配置 DEBUG -->
+    <appender name="DEBUG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- FIXME 日志名 -->
+        <!-- 正在记录的日志文件名 -->
+        <File>${log.filePath}/debug.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 日志归档, 索引 i 从 0 开始 -->
+            <fileNamePattern>${log.filePath}/debug-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- 控制单日志最大大小 -->
+            <maxFileSize>${log.maxFileSize}</maxFileSize>
+            <maxHistory>${log.maxHistory}</maxHistory>
+        </rollingPolicy>
+        <!-- 追加方式记录 -->
+        <append>true</append>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <!-- 指定日志界别过滤器, 不匹配的直接拒绝 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>debug</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    
+    <!-- 项目输出配置 INFO -->
+    <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- FIXME 日志名 -->
+        <!-- 正在记录的日志文件名 -->
+        <File>${log.filePath}/info.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 日志归档, 索引 i 从 0 开始 -->
+            <fileNamePattern>${log.filePath}/info-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- 控制单日志最大大小 -->
+            <maxFileSize>${log.maxFileSize}</maxFileSize>
+            <maxHistory>${log.maxHistory}</maxHistory>
+        </rollingPolicy>
+        <!-- 追加方式记录 -->
+        <append>true</append>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <!-- 指定日志界别过滤器, 不匹配的直接拒绝 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>info</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    
+    <!-- 项目日志输出配置 ERROR -->
+    <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- FIXME 日志名-->
+        <!-- 正在记录的日志文件名 -->
+        <File>${log.filePath}/error.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.filePath}/error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>${log.maxHistory}</maxHistory>
+            <maxFileSize>${log.maxFileSize}</maxFileSize>
+        </rollingPolicy>
+        <append>true</append>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+    </appender>
+    
+    <!-- 开发环境 profile 配置 -->
+    <springProfile name="dev">
+        <!-- FIXME 数据库日志打印 -->
+        <!--<logger name="" level="DEBUG"/>-->
+        <logger name="cn.cdutacm.onlinejudge.mapper" level="DEBUG"/>
+        <logger name="cn.cdutacm.onlinejudge" level="INFO"/>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="INFO_FILE"/>
+        </root>
+    </springProfile>
+    
+    <!-- 测试环境 profile 配置 -->
+    <springProfile name="beta">
+        <!-- FIXME 数据库日志打印 -->
+        <!--<logger name="" level="DEBUG"/>-->
+        <logger name="cn.cdutacm.onlinejudge.mapper" level="DEBUG"/>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+    
+    <!-- 生产环境 profile 配置 -->
+    <springProfile name="prod">
+        <!-- FIXME 其他需要记录日志的 logger -->
+        <!--<logger name="" level="INFO" additivity="false">-->
+        <!--    <appender-ref ref="FILE_INFO"/>-->
+        <!--</logger>-->
+        <root level="info">
+            <appender-ref ref="FILE_ERROR"/>
+        </root>
+    </springProfile>
+    
+
+</configuration>
+```
+
+如果需要引用 `application.yml` 文件中的属性, 可以使用:
+
+```xml
+<springProperty scope="context" name="{PROPERTY_NAME}" source="{PROPERTY_KEY}" defaultValue="{DEFAULT_VALUE}"/>
+```
+
+设置日志打印颜色:
+
+格式: `%color(日志内容)`, 可以识别的颜色有: black, red, green, yellow, blue, magenta, cyan, white, gray, bold*, highlight.
+
+> Grouping by [parentheses](https://logback.qos.ch/manual/layouts.html#Parentheses) as explained above allows coloring of sub-patterns. As of version 1.0.5, `PatternLayout` recognizes "%black", "%red", "%green","%yellow","%blue", "%magenta","%cyan", "%white", "%gray", "%boldRed","%boldGreen", "%boldYellow", "%boldBlue", "%boldMagenta""%boldCyan", "%boldWhite" and "%highlight" as conversion words. These conversion words are intended to contain a sub-pattern. Any sub-pattern enclosed by a coloring word will be output in the specified color.

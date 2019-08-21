@@ -43,7 +43,7 @@ git commit -m "init remote"
 git push
 ```
 
-## 远程仓库
+## 仓库
 
 ### 解除与远程仓库的关联
 
@@ -62,7 +62,16 @@ git remote remove <name>
 git remote add <name> <url>
 ```
 
+### 移除文件以及取消对文件的跟踪
 
+```bash
+# 首先列出操作会取消跟踪的文件列表
+git rm -r -n --cached <filename>
+# 真正地取消跟踪
+git rm -r --cached <filename>
+# 提交
+git commit -m <msg>
+```
 
 ## 分支管理
 
