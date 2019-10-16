@@ -40,12 +40,12 @@ tags:
 2. **void service(ServletRequest req, ServletResponse resp) throws ServletException, java.io.IOException**  
 
 3. **void destroy()**
-4. java.lang.String getServletInfo()
+4. String getServletInfo()
 5. ServletConfig getServletConfig()
 
 #### 生命周期
 
-Web 容器加载 Servlet 并将其实例化后, Servlet 生命周期开始. 容器运行其 `init()` 方法进行 Servlet 的初始化. 请求到达时调用 Servlet 的 `service()` 方法, `service()` 方法根据需要调用与请求对应的 `doGet()` 或 `doPost()` 方法. 当服务器关闭或项目被卸载时, 服务器会将 Servlet 实例销毁. 此时会调用 Servlet 的 `destroy()` 方法. **init 和 destroy 方法只会执行一次, service 方法会在客户端每次请求 Servlet 时执行**. Servlet 中有时会用到一些需要初始化与销毁的资源. 因此可以把初始化资源的代码放入 inti 方法中, 销毁资源的代码放入 destroy 中.
+Web 容器加载 Servlet 并将其实例化后, Servlet 生命周期开始. 容器运行其 `init()` 方法进行 Servlet 的初始化. 请求到达时调用 Servlet 的 `service()` 方法, `service()` 方法根据需要调用与请求对应的 `doGet()` 或 `doPost()` 方法. 当服务器关闭或项目被卸载时, 服务器会将 Servlet 实例销毁. 此时会调用 Servlet 的 `destroy()` 方法. **init 和 destroy 方法只会执行一次, service 方法会在客户端每次请求 Servlet 时执行**. Servlet 中有时会用到一些需要初始化与销毁的资源. 因此可以把初始化资源的代码放入 init 方法中, 销毁资源的代码放入 destroy 中.
 
 ### 转发(Forward)和重定向的区别(Redirect)的区别
 

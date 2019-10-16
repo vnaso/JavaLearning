@@ -29,8 +29,8 @@ tags:
 #### 子标签
 
 - `<property>`:定义参数常量
-- `<appender`:
-- `<root>`:
+- `<appender`:负责写日志的组件
+- `<root>`:根logger，也是一种logger，且只有一个level属性
 
 ### configuration - property
 

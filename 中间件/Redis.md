@@ -1,5 +1,5 @@
 ---
-title: Nginx学习笔记
+title: Redis学习笔记
 date: 2019/04/15 14:34
 categories:
 - 中间件

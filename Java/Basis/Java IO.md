@@ -172,7 +172,7 @@ tags:
 
 ### 简介
 
-NIO 是 JDK1.4 之后引入的一套 IO 接口, NIO 所有 IO 操作都是非阻塞的. N 可以理解为 Non-blocking.和 New.
+NIO 是 JDK1.4 之后引入的一套 IO 接口, NIO 所有 IO 操作都是非阻塞的. N 可以理解为 Non-blocking 和 New.
 
 ### 核心组件
 

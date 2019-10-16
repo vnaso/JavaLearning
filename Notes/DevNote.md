@@ -53,7 +53,9 @@ jdbc:mysql://{host}:{port}/{schema}?useUnicode=true&characterEncoding=utf8&useSS
 public void updatePeople(@ApiParam People p, @ApiParam String type){}
 ```
 
+### 配置未生效？
 
+检查配置类所在的包是否被扫描到，与 bootstrap 类不在同一包下的包需要手动添加扫描路径。
 
 ### 使用 Nginx 反向代理后获取不到真实客户端 IP
 

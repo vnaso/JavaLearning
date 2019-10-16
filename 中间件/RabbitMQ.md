@@ -1,5 +1,5 @@
 ---
-title: RabbitMQ 笔记
+title: RabbitMQ笔记
 date: 2019/08/20 18:57
 categories:
 - 中间件

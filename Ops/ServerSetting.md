@@ -71,7 +71,7 @@ source /etc/profile.d/java8.sh
 
    ![mysql_pwd.png](https://i.loli.net/2019/03/03/5c7b6d28c8abf.png)
 
-2. 登录 mysql, 若出现提示 `Access denied for user 'root'@'localhost'`, 可能是密码错了.
+2. 登录 mysql, `mysql -u <用户名> -p`, 若出现提示 `Access denied for user 'root'@'localhost'`, 可能是密码错了.
 
 3. 修改 root 密码: `ALTER USER 'root'@'localhost' IDENTIFIED BY 'vnaso943983';`
 
