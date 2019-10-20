@@ -40,7 +40,7 @@ nohup java -jar {path} &
 
 ### OpenJDK
 
-安装 OpenJDK 命令
+安装 OpenJDK 命
 
 ```bash
 yum -y install java-1.8.0-openjdk java-1.8.0-openjdk-devel
@@ -124,9 +124,18 @@ source /etc/profile.d/java8.sh
 
    ```bash
    yum -y install zlib-devel openssl-devel cpio expat-devel gettext-devel curl-devel perl-ExtUtils-CBuilder perl-ExtUtils-MakeMaker
+   # ubuntu
+   apt-get install libcurl4-gnutls-dev libexpat1-dev gettext libz-dev libssl-dev
    ```
 
 4. 进入 `git `安装目录下, 进行安装: `./configure --prefix=/usr/local/git`-> `make && make install`
+
+   > ubuntu:
+   >
+   > ```bash
+   > make prefix=/usr/local/git all
+   > sudo make prefix=/usr/local/git install
+   > ```
 
    如果报错 `no such file or directory: ./configure`. 使用: `yum install autoconf`然后在目录中键入 `autoconf`, 再次进行安装即可.
 
@@ -348,7 +357,9 @@ source /etc/profile.d/java8.sh
 
    下载完 autojump 后, 进入根目录, 执行 `install.py`.
 
-   然后根据提示, 将 `[[ -s /root/.autojump/etc/profile.d/autojump.sh ]] && source /root/.autojump/etc/profile.d/autojump.sh` 添加到 `.zshrc`中.
+   然后根据提示, 将 `[[ -s /root/.autojump/etc/profile.d/autojump.sh ]] && source /root/.autojump/etc/profile.d/autojump.sh` 添加到 `.zshrc`中. 每次该提示都不尽相同, 根据实际情况进行复制.
+
+> 使用 zsh 时, zsh 不会使用 `/etc/profile` 中的配置, 而是使用 `/etc/zsh/zprofile` 下的配置. 记得进行更改.
 
 ## swap交换缓存
 
