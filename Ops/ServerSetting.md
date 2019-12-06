@@ -7,7 +7,7 @@ tags:
 - Linux
 ---
 
-服务器环境搭建
+# 服务器环境搭建
 
 ## Java
 
@@ -58,7 +58,7 @@ source /etc/profile.d/java8.sh
 
 #### 安装
 
-1. 到[官网Yum	仓库](https://dev.mysql.com/downloads/repo/yum/)下载 `rpm` 包.
+1. 到[官网Yum仓库](https://dev.mysql.com/downloads/repo/yum/)下载 `rpm` 包.
 2. `rpm -ivh <文件名> `或者 `yum localinstall <文件名> `安装刚才下载好的包
 3. 此时便可以通过 `yum `安装最新的 `mysql`. 使用指令 `yum install mysql-community-server `安装
 
@@ -163,6 +163,9 @@ source /etc/profile.d/java8.sh
 2. 安装 `nginx `编译文件及库文件 `yum -y install make zlib zlib-devel gcc-c++ libtool  openssl openssl-devel pcre pcre-devel`
 3. 进入解压后的目录进行安装: `./configure --prefix=/usr/local/nginx`->`make && make install`
 4. 测试: `/usr/local/nginx/sbin/nginx -t`
+5. 启动：`/usr/local/nginx/sbin/nginx`
+6. 重启：`/usr/local/nginx/sbin/nginx -s reload`
+7. 停止：`/usr/local/nginx/sbin/nginx -s stop`
 
 #### 配置
 
@@ -210,7 +213,13 @@ source /etc/profile.d/java8.sh
    </mirror>
    ```
 
-3. 保存即可
+3. 保存即可, 用以下命令查看生效的 `settings.xml`
+
+   ```bash
+   mvn help:effective-settings
+   ```
+
+   
 
 ## Vstpd
 
@@ -464,7 +473,7 @@ source /etc/profile.d/java8.sh
 1. 拉取镜像.
 
    ```shell
-   docker pull rabbitmq:3.3.7-management
+   docker pull rabbitmq:3.7.7-management
    ```
 
    注意: 带有 management 的版本才有后台管理.
@@ -473,6 +482,8 @@ source /etc/profile.d/java8.sh
 
    ```shell
    docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 -v ~/app/rabbitmq/data:/var/lib/rabbitmq --hostname rabbitNo1 -e RABBITMQ_DEFAULT_VHOST=my_vhost -e RABBITMQ_DEFAULT_USER=admin -e RABBITMQ_DEFAULT_PASS=admin rabbitmq:3.7.7-management
+   
+   docker run -d --name rabbitmq -p 30001:5672 -p 30002:15672 -v ~/app/rabbitmq/data:/var/lib/rabbitmq --hostname rabbitmq rabbitmq:3.7.7-management
    ```
 
    - 5672 为运行 rabbitmq 运行端口, 15672 为后台管理界面端口.

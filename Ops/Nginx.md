@@ -75,7 +75,7 @@ events {
 
 ### http块
 
-> 可以嵌套多个server,配置代理,缓存,日志定义等绝大多数功能和第三方模块的配置.如文件引入,mime-type定义,日志自定义,是否使用sendfile传输文件,连接超时时间,单连接请求数等.
+> 可以嵌套多个server,配置代理,缓存,日志定义等绝大多数功能和第三方模块的配置.如文件引入,mime-type定义,日志自定义,是否使用sendfile传输文件,连接超时时间,单连接请求数等. 并且可以使用 `include /path/to/file` 来导入外部配置文件，例如：`include /etc/myconf/nginx.conf`。
 
 ```
 http {
@@ -96,6 +96,8 @@ http {
     }
     error_page 404 https://www.baidu.com; #请求失败时跳转的错误页 
 ```
+
+
 
 ### server块
 

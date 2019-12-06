@@ -71,11 +71,45 @@ tags:
 
 动态查看文件最后n行: `tail -n <行数> -f <文件名>`,使用`ctrl+c`来结束
 
-### 创建文件
+### 编辑文件
 
-创建指定大小文件: `fallocate -l <文件大小> <文件名>`
+#### 创建指定大小文件
 
-> 例:`sudo fallocate -l 4G /swapfile`(在`/`下创建一个大小为4G的文件`swapfile`)
+```bash
+fallocate -l <文件大小> <文件名>
+```
+
+> 例如在 `/` 下创建一个大小为4G的文件 `swapfile`。
+>
+> ```bash
+> sudo fallocate -l 4G /swapfile
+> ```
+
+#### 交互式将内容追加或覆盖到文件
+
+```bash
+# 追加内容到文件
+cat << ${EOF} >> ${Filename}
+...
+content
+...
+# 覆盖内容到文件
+cat << ${EOF} > ${Filename}
+...
+content
+...
+```
+
+- `${EOF}`：结束符，交互模式下输入该结束符结束输入。
+- `${Filename}`：要写入到的文件名。
+
+#### 文件批量操作
+
+例如有多个 `*-0.0.1-SNAPSHOT.jar` 的 Jar，需要去掉版本号，可以使用循环命令配合字符串截取来为每个文件改名。
+
+```bash
+for file in `ls *-0.0.1-SNAPSHOT.jar`;do mv $file ${file%-0.0.1*}.jar;done
+```
 
 ### 查看系统状态
 

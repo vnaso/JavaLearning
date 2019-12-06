@@ -7,6 +7,46 @@ tags:
 - Git
 ---
 
+## 环境相关
+
+### 设置用户
+
+```bash
+git config --global user.name "Your name here"
+git config --global user.email "email@example.com"
+```
+
+### 连接 Github
+
+1. 生成 SSH 公钥。
+
+   ```bash
+   ssh-keygen -t rsa -C "email@example.com"
+   ```
+
+2. 获取刚才生成的公钥。
+
+   ```bash
+   cat ~/.ssh/id_rsa.pub
+   ```
+
+3. 在 Github 上 `Settings > SSH and GPG keys` 中添加生成的公钥。
+
+4. 验证。
+
+   ```bash
+   ssh -T git@github.com
+   ```
+
+### 设置代理
+
+```bash
+git config --global http.proxy 'socks5://127.0.0.1:1080'
+git config --global https.proxy 'socks5//127.0.0.1:1080'
+```
+
+
+
 ## 初始化
 
 ### 初始化一个已经有内容了的目录
