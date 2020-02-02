@@ -40,12 +40,38 @@ git config --global user.email "email@example.com"
 
 ### 设置代理
 
+#### HTTP 形式
+
+如 `git clone https://github.com/owner/git.git`。
+
 ```bash
-git config --global http.proxy 'socks5://127.0.0.1:1080'
-git config --global https.proxy 'socks5//127.0.0.1:1080'
+git config --global http.proxy 'socks5://127.0.0.1:1086'
+git config --global https.proxy 'socks5//127.0.0.1:1086'
 ```
 
+#### SSH 形式
 
+如 `git clone git@github.com:owner/git.git`。
+
+编辑 `~/.ssh/config` 文件，添加以下内容。
+
+```
+Host github.com
+   HostName github.com
+   User git
+   # 走 HTTP 代理
+   # ProxyCommand socat - PROXY:127.0.0.1:%h:%p,proxyport=8080
+   # 走 socks5 代理（如 Shadowsocks）
+   # ProxyCommand nc -v -x 127.0.0.1:1080 %h %p
+```
+
+#### 生成 `.gitignore` 文件
+
+```shell
+curl -o https://www.gitignore.io/api/jetbrains+all,macos,maven,java
+```
+
+使用 `gitignore.io` 网站提供的 API 生成 `.gitignore` 文件。
 
 ## 初始化
 
@@ -123,7 +149,70 @@ git commit -m <msg>
 git merge --no-ff <commit-id>
 ```
 
+### 拉取远端分支到本地
 
+在本地项目中没有最新创建的远端分支时，使用以下代码拉取远端的分支。
+
+```bash
+# 方式一
+git checkout -b vnaso origin/vnaso
+# 方式二
+git fetch origin <remote_branch>:<local_branch>
+# 方式三
+git branch -u <remote_branch>
+git branch --set-upstream-to <remote_branch>
+```
+
+- 方式一
+  1. 拉取远程分支到本地。
+  2. 在本地创建一个分支与远程分支对应。
+  3. 切换到创建的分支。
+  
+- 方式二
+  1. 同步远程仓库。
+  2. 拉取远程分支到本地。
+  3. 在本地创建一个分支与远程分支对应。
+  
+- 方式三
+
+  将本地分支与远程分支建立映射关系
+
+### 拉取指定分支
+
+有时仓库过大，有太多分支，如果只想拉取某些分支，以下操作可以实现。
+
+```bash
+# 编辑仓库配置
+git config -e
+```
+
+使用 `git clone` 不设置其他参数时，配置应如下所示。
+
+```
+[remote "origin"]
+        url = git@github.com:vnaso/repo.git
+        fetch = +refs/heads/*:refs/remotes/origin/*
+```
+
+这种情况下，使用 `git fetch` 会拉取所有分支。如果我们只想拉取 `master` 和 `vanso` 分支，可以修改为配置如下。
+
+```
+[remote "origin"]
+        url = git@github.com:vnaso/repo.git
+        fetch = +refs/heads/master:refs/remotes/origin/master
+        fetch = +refs/heads/vnaso:refs/remotes/origin/vnaso
+```
+
+参考资料：[引用规格](https://git-scm.com/book/zh/v2/Git-%E5%86%85%E9%83%A8%E5%8E%9F%E7%90%86-%E5%BC%95%E7%94%A8%E8%A7%84%E6%A0%BC)
+
+### 删除本地分支
+
+```bash
+# 删除已经被 merge 的分支
+git branch -d <branch>
+# 删除未被 merge 的分支
+git branch -D <branch>
+```
 
 ## 撤销修改
 
@@ -134,8 +223,8 @@ git merge --no-ff <commit-id>
 使用 HEAD 中的最新内容替换工作区中的文件
 
 ```bash
-# 单个文件/文件夹
-git checkout --<filename>
+# 单个文件/文件夹，默认为当前分支
+git checkout [branch] -- path/to/file
 # 所有文件/文件夹
 git checkout .
 ```
